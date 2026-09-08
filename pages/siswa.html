@@ -1,62 +1,121 @@
 <div class="section-title">
-  <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-  Buku Induk Peserta Didik (Standar Dinas Pendidikan)
+  <div class="section-title-left">
+    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Buku Induk Peserta Didik (Per Rombongan Belajar)
+  </div>
+  <!-- TOMBOL TAMBAH SISWA DI LUAR (POJOK KANAN ATAS) -->
+  <button type="button" class="btn btn-primary" onclick="openAddSiswaModalGlobal()">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    + Tambah Siswa Baru
+  </button>
 </div>
 
-<form onsubmit="event.preventDefault();">
-  <div class="form-grid">
-    <div class="form-group">
-      <label>NISN (Nomor Induk Siswa Nasional)</label>
-      <input type="text" placeholder="Contoh: 0051234567" required>
-    </div>
-    <div class="form-group">
-      <label>NIS (Nomor Induk Sekolah)</label>
-      <input type="text" placeholder="Contoh: 23241001" required>
-    </div>
-    <div class="form-group">
-      <label>NIK Siswa</label>
-      <input type="text" placeholder="16 Digit NIK sesuai KK">
-    </div>
-    <div class="form-group full-width">
-      <label>Nama Lengkap Siswa</label>
-      <input type="text" placeholder="Nama sesuai ijazah sebelumnya" required>
-    </div>
-    <div class="form-group">
-      <label>Tempat Lahir</label>
-      <input type="text" placeholder="Kota / Kabupaten">
-    </div>
-    <div class="form-group">
-      <label>Tanggal Lahir</label>
-      <input type="date">
-    </div>
-    <div class="form-group">
-      <label>Jenis Kelamin</label>
-      <select>
-        <option value="">-- Pilih --</option>
-        <option value="L">Laki-Laki</option>
-        <option value="P">Perempuan</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Jurusan / Program Keahlian</label>
-      <select data-master="jurusan">
-        <option value="">-- Pilih Jurusan --</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Rombongan Belajar / Kelas</label>
-      <select data-master="kelas" required>
-        <option value="">-- Pilih Kelas --</option>
-      </select>
-    </div>
-    <div class="form-group full-width">
-      <label>Alamat Lengkap Siswa</label>
-      <textarea rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"></textarea>
-    </div>
-  </div>
+<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+  Klik pada salah satu kartu kelas di bawah untuk melihat rincian detail murid pada kelas tersebut.
+</p>
 
-  <div class="form-actions">
-    <button type="button" class="btn btn-secondary">Batal</button>
-    <button type="submit" class="btn btn-primary">Simpan Data Siswa</button>
+<!-- GRID KARTU KELAS DAN JUMLAH SISWA -->
+<div class="class-card-grid" id="classCardContainer">
+  <!-- Rendered via JS -->
+</div>
+
+<!-- 1. MODAL DETAIL SISWA PER KELAS (PURE TABLE VIEW DETAIL) -->
+<div class="modal-overlay hidden" id="modalSiswaDetail">
+  <div class="modal-card" style="max-width: 850px;">
+    <div class="modal-header">
+      <h3 id="modalSiswaClassTitle">Detail Siswa Kelas</h3>
+      <button type="button" class="btn-close-modal" onclick="closeSiswaDetailModal()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="table-scroll-container" style="max-height: 420px;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px; text-align: center;">No</th>
+            <th>NISN</th>
+            <th>NIS</th>
+            <th>Nama Lengkap Siswa</th>
+            <th>Jurusan</th>
+            <th style="text-align: center;">L/P</th>
+            <th>Tempat, Tgl Lahir</th>
+            <th style="text-align: center; width: 80px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableSiswaBody">
+          <!-- Rendered via JS -->
+        </tbody>
+      </table>
+    </div>
   </div>
-</form>
+</div>
+
+<!-- 2. MODAL FORM INPUT SISWA BARU (INPUT GLOBAL) -->
+<div class="modal-overlay hidden" id="modalAddSiswaGlobal">
+  <div class="modal-card" style="max-width: 700px;">
+    <div class="modal-header">
+      <h3>Input Data Siswa Baru Buku Induk</h3>
+      <button type="button" class="btn-close-modal" onclick="closeAddSiswaModalGlobal()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form onsubmit="handleSaveSiswaGlobal(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Pilih Kelas / Rombongan Belajar</label>
+          <select id="inputSiswaKelasGlobal" data-master="kelas" required>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jurusan / Program Keahlian</label>
+          <select id="inputSiswaJurusanGlobal" data-master="jurusan" required>
+            <option value="">-- Pilih Jurusan --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>NISN (Nomor Induk Siswa Nasional)</label>
+          <input type="text" id="inputSiswaNisnGlobal" placeholder="0051234567" required>
+        </div>
+        <div class="form-group">
+          <label>NIS (Nomor Induk Sekolah)</label>
+          <input type="text" id="inputSiswaNisGlobal" placeholder="23241001" required>
+        </div>
+        <div class="form-group full-width">
+          <label>Nama Lengkap Siswa</label>
+          <input type="text" id="inputSiswaNamaGlobal" placeholder="Nama sesuai ijazah sebelumnya" required>
+        </div>
+        <div class="form-group">
+          <label>Jenis Kelamin</label>
+          <select id="inputSiswaJkGlobal" required>
+            <option value="L">Laki-Laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tempat Lahir</label>
+          <input type="text" id="inputSiswaTempatLahirGlobal" placeholder="Kota / Kabupaten">
+        </div>
+        <div class="form-group">
+          <label>Tanggal Lahir</label>
+          <input type="date" id="inputSiswaTglLahirGlobal">
+        </div>
+        <div class="form-group full-width">
+          <label>NIK Siswa</label>
+          <input type="text" id="inputSiswaNikGlobal" placeholder="16 Digit NIK sesuai KK">
+        </div>
+        <div class="form-group full-width">
+          <label>Alamat Lengkap Siswa</label>
+          <textarea id="inputSiswaAlamatGlobal" rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeAddSiswaModalGlobal()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Data Siswa</button>
+      </div>
+    </form>
+  </div>
+</div>

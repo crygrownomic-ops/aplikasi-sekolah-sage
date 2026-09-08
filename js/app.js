@@ -1,4 +1,4 @@
-// SISTEM AUTHENTICATION & DYNAMIC PAGE LOADER WITH AUTO-POPULATE
+// SISTEM AUTHENTICATION & SMART LOADER CADANGAN LENGKAP
 
 function checkAuthStatus() {
   const isLoggedIn = sessionStorage.getItem('siakad_auth');
@@ -39,12 +39,14 @@ function handleLogout() {
   }
 }
 
-// Built-in Templates dengan data-master attribute untuk sinkronisasi otomatis
 const builtInTemplates = {
   dashboard: `
+    <div id="dashboardBirthdayNotice"></div>
     <div class="section-title">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard Ringkasan Data Sekolah
+      <div class="section-title-left">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard Ringkasan Data Sekolah
+      </div>
     </div>
     <div class="dashboard-metrics-grid">
       <div class="metric-card">
@@ -90,232 +92,198 @@ const builtInTemplates = {
     </div>
   `,
 
-  siswa: `
-    <div class="section-title">
-      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Buku Induk Peserta Didik (Standar Dinas Pendidikan)
-    </div>
-    <form onsubmit="event.preventDefault();">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>NISN (Nomor Induk Siswa Nasional)</label>
-          <input type="text" placeholder="Contoh: 0051234567" required>
-        </div>
-        <div class="form-group">
-          <label>NIS (Nomor Induk Sekolah)</label>
-          <input type="text" placeholder="Contoh: 23241001" required>
-        </div>
-        <div class="form-group">
-          <label>NIK Siswa</label>
-          <input type="text" placeholder="16 Digit NIK sesuai KK">
-        </div>
-        <div class="form-group full-width">
-          <label>Nama Lengkap Siswa</label>
-          <input type="text" placeholder="Nama sesuai ijazah sebelumnya" required>
-        </div>
-        <div class="form-group">
-          <label>Tempat Lahir</label>
-          <input type="text" placeholder="Kota / Kabupaten">
-        </div>
-        <div class="form-group">
-          <label>Tanggal Lahir</label>
-          <input type="date">
-        </div>
-        <div class="form-group">
-          <label>Jenis Kelamin</label>
-          <select>
-            <option value="">-- Pilih --</option>
-            <option value="L">Laki-Laki</option>
-            <option value="P">Perempuan</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Jurusan / Program Keahlian</label>
-          <select data-master="jurusan">
-            <option value="">-- Pilih Jurusan --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Rombongan Belajar / Kelas</label>
-          <select data-master="kelas" required>
-            <option value="">-- Pilih Kelas --</option>
-          </select>
-        </div>
-        <div class="form-group full-width">
-          <label>Alamat Lengkap Siswa</label>
-          <textarea rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"></textarea>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan Data Siswa</button>
-      </div>
-    </form>
-  `,
-
   guru: `
     <div class="section-title">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
-      Database Master Guru & Tenaga Pendidik
+      <div class="section-title-left">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
+        Database Master Guru & Tenaga Pendidik
+      </div>
+      <button type="button" class="btn btn-primary" onclick="openGuruModal()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        + Tambah Guru Baru
+      </button>
     </div>
-    <form onsubmit="event.preventDefault();">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>NIP / NIY (Nomor Induk Guru)</label>
-          <input type="text" placeholder="19xxxxxx / NIYxx" required>
-        </div>
-        <div class="form-group full-width">
-          <label>Nama Lengkap & Gelar</label>
-          <input type="text" placeholder="Contoh: Dr. Ahmad Fauzi, M.Pd." required>
-        </div>
-        <div class="form-group">
-          <label>Mata Pelajaran Utama</label>
-          <select data-master="mapel" required>
-            <option value="">-- Pilih Mapel --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Status Kepegawaian</label>
-          <select data-master="kepegawaian">
-            <option value="">-- Pilih Status --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>No. Handphone / WhatsApp</label>
-          <input type="text" placeholder="08xxxxxxxxxx">
-        </div>
-        <div class="form-group">
-          <label>Email Utama</label>
-          <input type="email" placeholder="guru@sekolah.sch.id">
-        </div>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary">Batal</button>
-        <button type="submit" class="btn btn-primary">Simpan Data Guru</button>
-      </div>
-    </form>
-  `,
 
-  jadwal: `
-    <div class="section-title">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Manajemen Jadwal Mengajar & Alokasi Kelas
+    <div class="table-scroll-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 50px; text-align: center;">No</th>
+            <th>NIP / NIY</th>
+            <th>Nama Lengkap & Gelar</th>
+            <th>Mata Pelajaran</th>
+            <th>Status</th>
+            <th>Tanggal Lahir</th>
+            <th>Kontak</th>
+            <th style="text-align: center; width: 100px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableGuruBody"></tbody>
+      </table>
     </div>
-    <form onsubmit="event.preventDefault();">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Pilih Hari</label>
-          <select required>
-            <option value="Senin">Senin</option>
-            <option value="Selasa">Selasa</option>
-            <option value="Rabu">Rabu</option>
-            <option value="Kamis">Kamis</option>
-            <option value="Jumat">Jumat</option>
-            <option value="Sabtu">Sabtu</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Jam Pelajaran Ke-</label>
-          <select required>
-            <option value="1-2">Jam 1 - 2 (07:00 - 08:30)</option>
-            <option value="3-4">Jam 3 - 4 (08:30 - 10:00)</option>
-            <option value="5-6">Jam 5 - 6 (10:15 - 11:45)</option>
-            <option value="7-8">Jam 7 - 8 (12:30 - 14:00)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Pilih Guru Pengajar</label>
-          <select required>
-            <option value="">-- Pilih Guru --</option>
-            <option value="1">Dr. Ahmad Fauzi, M.Pd.</option>
-            <option value="2">Siti Nurhaliza, S.Pd.</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Pilih Mata Pelajaran</label>
-          <select data-master="mapel" required>
-            <option value="">-- Pilih Mapel --</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Pilih Kelas</label>
-          <select data-master="kelas" required>
-            <option value="">-- Pilih Kelas --</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Tambah ke Matriks Jadwal</button>
-      </div>
-    </form>
-  `,
 
-  absensi: `
-    <div class="section-title">
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      Input Presensi Siswa Real-Time (Per Jam Pelajaran)
-    </div>
-    <div class="form-grid" style="margin-bottom: 20px;">
-      <div class="form-group">
-        <label>Pilih Kelas Ajar Hari Ini</label>
-        <select data-master="kelas">
-          <option value="">-- Pilih Kelas --</option>
-        </select>
+    <div class="modal-overlay hidden" id="modalGuru">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modalGuruTitle">Tambah Data Guru Baru</h3>
+          <button type="button" class="btn-close-modal" onclick="closeGuruModal()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <form onsubmit="handleSaveGuru(event)">
+          <input type="hidden" id="inputGuruEditId">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>NIP / NIY (Nomor Induk Guru)</label>
+              <input type="text" id="inputNipGuru" placeholder="19xxxxxx / NIYxx" required>
+            </div>
+            <div class="form-group">
+              <label>Tanggal Lahir Guru</label>
+              <input type="date" id="inputTglLahirGuru" required>
+            </div>
+            <div class="form-group full-width">
+              <label>Nama Lengkap & Gelar</label>
+              <input type="text" id="inputNamaGuru" placeholder="Contoh: Dr. Ahmad Fauzi, M.Pd." required>
+            </div>
+            <div class="form-group">
+              <label>Mata Pelajaran Utama</label>
+              <select id="inputMapelGuru" data-master="mapel" required>
+                <option value="">-- Pilih Mapel --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status Kepegawaian</label>
+              <select id="inputKepegawaianGuru" data-master="kepegawaian">
+                <option value="">-- Pilih Status --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>No. Handphone / WhatsApp</label>
+              <input type="text" id="inputHpGuru" placeholder="08xxxxxxxxxx">
+            </div>
+            <div class="form-group">
+              <label>Email Utama</label>
+              <input type="email" id="inputEmailGuru" placeholder="guru@sekolah.sch.id">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeGuruModal()">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Data Guru</button>
+          </div>
+        </form>
       </div>
     </div>
   `,
 
-  masterdata: `
+  siswa: `
     <div class="section-title">
-      <svg viewBox="0 0 24 24"><path d="M12 2H2v10h10V2zM22 2h-8v6h8V2zM22 10h-8v12h8V10zM12 14H2v8h10v-8z"/></svg>
-      Kelola Master Data Sekolah (Kustomisasi Mandiri)
+      <div class="section-title-left">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Buku Induk Peserta Didik (Per Rombongan Belajar)
+      </div>
+      <button type="button" class="btn btn-primary" onclick="openAddSiswaModalGlobal()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        + Tambah Siswa Baru
+      </button>
     </div>
-    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
-      Tambah atau hapus data master di bawah ini. Perubahan akan otomatis terintegrasi dan muncul di seluruh form aplikasi.
+
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+      Klik pada salah satu kartu kelas di bawah untuk melihat rincian detail murid pada kelas tersebut.
     </p>
-    <div class="master-data-grid">
-      <div class="master-card">
-        <div class="master-card-header">
-          <h3>Rombongan Belajar (Kelas)</h3>
-        </div>
-        <form onsubmit="handleAddMasterItem(event, 'kelas')" class="inline-add-form">
-          <input type="text" id="inputMasterKelas" placeholder="Contoh: XII - IPA 2" required>
-          <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
-        </form>
-        <div class="master-list-container" id="listMasterKelas"></div>
-      </div>
 
-      <div class="master-card">
-        <div class="master-card-header">
-          <h3>Mata Pelajaran (Mapel)</h3>
-        </div>
-        <form onsubmit="handleAddMasterItem(event, 'mapel')" class="inline-add-form">
-          <input type="text" id="inputMasterMapel" placeholder="Contoh: Informatika / AI" required>
-          <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
-        </form>
-        <div class="master-list-container" id="listMasterMapel"></div>
-      </div>
+    <div class="class-card-grid" id="classCardContainer"></div>
 
-      <div class="master-card">
-        <div class="master-card-header">
-          <h3>Status Kepegawaian Guru</h3>
+    <div class="modal-overlay hidden" id="modalSiswaDetail">
+      <div class="modal-card" style="max-width: 850px;">
+        <div class="modal-header">
+          <h3 id="modalSiswaClassTitle">Detail Siswa Kelas</h3>
+          <button type="button" class="btn-close-modal" onclick="closeSiswaDetailModal()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <form onsubmit="handleAddMasterItem(event, 'kepegawaian')" class="inline-add-form">
-          <input type="text" id="inputMasterKepegawaian" placeholder="Contoh: Guru Honor Daerah" required>
-          <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
-        </form>
-        <div class="master-list-container" id="listMasterKepegawaian"></div>
+        <div class="table-scroll-container" style="max-height: 420px;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">No</th>
+                <th>NISN</th>
+                <th>NIS</th>
+                <th>Nama Lengkap Siswa</th>
+                <th>Jurusan</th>
+                <th style="text-align: center;">L/P</th>
+                <th>Tempat, Tgl Lahir</th>
+                <th style="text-align: center; width: 80px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableSiswaBody"></tbody>
+          </table>
+        </div>
       </div>
+    </div>
 
-      <div class="master-card">
-        <div class="master-card-header">
-          <h3>Jurusan / Program Keahlian</h3>
+    <div class="modal-overlay hidden" id="modalAddSiswaGlobal">
+      <div class="modal-card" style="max-width: 700px;">
+        <div class="modal-header">
+          <h3>Input Data Siswa Baru Buku Induk</h3>
+          <button type="button" class="btn-close-modal" onclick="closeAddSiswaModalGlobal()">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
-        <form onsubmit="handleAddMasterItem(event, 'jurusan')" class="inline-add-form">
-          <input type="text" id="inputMasterJurusan" placeholder="Contoh: Rekayasa Perangkat Lunak" required>
-          <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
+        <form onsubmit="handleSaveSiswaGlobal(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Pilih Kelas / Rombongan Belajar</label>
+              <select id="inputSiswaKelasGlobal" data-master="kelas" required>
+                <option value="">-- Pilih Kelas --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Jurusan / Program Keahlian</label>
+              <select id="inputSiswaJurusanGlobal" data-master="jurusan" required>
+                <option value="">-- Pilih Jurusan --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>NISN (Nomor Induk Siswa Nasional)</label>
+              <input type="text" id="inputSiswaNisnGlobal" placeholder="0051234567" required>
+            </div>
+            <div class="form-group">
+              <label>NIS (Nomor Induk Sekolah)</label>
+              <input type="text" id="inputSiswaNisGlobal" placeholder="23241001" required>
+            </div>
+            <div class="form-group full-width">
+              <label>Nama Lengkap Siswa</label>
+              <input type="text" id="inputSiswaNamaGlobal" placeholder="Nama sesuai ijazah sebelumnya" required>
+            </div>
+            <div class="form-group">
+              <label>Jenis Kelamin</label>
+              <select id="inputSiswaJkGlobal" required>
+                <option value="L">Laki-Laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tempat Lahir</label>
+              <input type="text" id="inputSiswaTempatLahirGlobal" placeholder="Kota / Kabupaten">
+            </div>
+            <div class="form-group">
+              <label>Tanggal Lahir</label>
+              <input type="date" id="inputSiswaTglLahirGlobal">
+            </div>
+            <div class="form-group full-width">
+              <label>NIK Siswa</label>
+              <input type="text" id="inputSiswaNikGlobal" placeholder="16 Digit NIK sesuai KK">
+            </div>
+            <div class="form-group full-width">
+              <label>Alamat Lengkap Siswa</label>
+              <textarea id="inputSiswaAlamatGlobal" rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeAddSiswaModalGlobal()">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Data Siswa</button>
+          </div>
         </form>
-        <div class="master-list-container" id="listMasterJurusan"></div>
       </div>
     </div>
   `
@@ -325,20 +293,13 @@ async function loadPage(pageName) {
   const container = document.getElementById('mainContentContainer');
   if (!container) return;
 
-  document.querySelectorAll('.sidebar .nav-item').forEach(btn => {
-    btn.classList.remove('active');
-  });
-
+  document.querySelectorAll('.sidebar .nav-item').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.querySelector(`.sidebar .nav-item[data-page="${pageName}"]`);
-  if (activeBtn) {
-    activeBtn.classList.add('active');
-  }
+  if (activeBtn) activeBtn.classList.add('active');
 
   try {
     const response = await fetch(`pages/${pageName}.html`);
-    if (!response.ok) {
-      throw new Error(`File pages/${pageName}.html tidak ditemukan.`);
-    }
+    if (!response.ok) throw new Error(`File pages/${pageName}.html tidak ditemukan.`);
     const htmlContent = await response.text();
     container.innerHTML = htmlContent;
   } catch (error) {
@@ -349,19 +310,28 @@ async function loadPage(pageName) {
     }
   }
 
-  // Eksekusi Render Khusus Modul Master Data
+  if (typeof populateDynamicSelects === 'function') {
+    populateDynamicSelects();
+  }
+
+  if (pageName === 'dashboard' && typeof renderBirthdayWidget === 'function') {
+    renderBirthdayWidget();
+  }
+
+  if (pageName === 'guru' && typeof renderGuruListUI === 'function') {
+    renderGuruListUI();
+  }
+
+  if (pageName === 'siswa' && typeof renderClassCardsUI === 'function') {
+    renderClassCardsUI();
+  }
+
   if (pageName === 'masterdata' && typeof renderMasterDataUI === 'function') {
     renderMasterDataUI();
   }
 
-  // Eksekusi Render Pengaturan
   if (pageName === 'pengaturan' && typeof loadSchoolSettings === 'function') {
     loadSchoolSettings();
-  }
-
-  // SINKRONISASI OTOMATIS: ISI SEMUA DROPDOWN KELAS/MAPEL/JURUSAN/STATUS
-  if (typeof populateDynamicSelects === 'function') {
-    populateDynamicSelects();
   }
 }
 

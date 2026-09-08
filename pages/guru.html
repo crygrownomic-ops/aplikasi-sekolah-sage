@@ -1,42 +1,87 @@
 <div class="section-title">
-  <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
-  Database Master Guru & Tenaga Pendidik
+  <div class="section-title-left">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
+    Database Master Guru & Tenaga Pendidik
+  </div>
+  <button type="button" class="btn btn-primary" onclick="openGuruModal()">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    + Tambah Guru Baru
+  </button>
 </div>
 
-<form onsubmit="event.preventDefault();">
-  <div class="form-grid">
-    <div class="form-group">
-      <label>NIP / NIY (Nomor Induk Guru)</label>
-      <input type="text" placeholder="19xxxxxx / NIYxx" required>
-    </div>
-    <div class="form-group full-width">
-      <label>Nama Lengkap & Gelar</label>
-      <input type="text" placeholder="Contoh: Dr. Ahmad Fauzi, M.Pd." required>
-    </div>
-    <div class="form-group">
-      <label>Mata Pelajaran Utama</label>
-      <select data-master="mapel" required>
-        <option value="">-- Pilih Mapel --</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Status Kepegawaian</label>
-      <select data-master="kepegawaian">
-        <option value="">-- Pilih Status --</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>No. Handphone / WhatsApp</label>
-      <input type="text" placeholder="08xxxxxxxxxx">
-    </div>
-    <div class="form-group">
-      <label>Email Utama</label>
-      <input type="email" placeholder="guru@sekolah.sch.id">
-    </div>
-  </div>
+<!-- TABEL DAFTAR GURU DENGAN SCROLL LOCK -->
+<div class="table-scroll-container">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 50px; text-align: center;">No</th>
+        <th>NIP / NIY</th>
+        <th>Nama Lengkap & Gelar</th>
+        <th>Mata Pelajaran</th>
+        <th>Status</th>
+        <th>Tanggal Lahir</th>
+        <th>Kontak</th>
+        <th style="text-align: center; width: 100px;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tableGuruBody">
+      <!-- Rendered via JS -->
+    </tbody>
+  </table>
+</div>
 
-  <div class="form-actions">
-    <button type="button" class="btn btn-secondary">Batal</button>
-    <button type="submit" class="btn btn-primary">Simpan Data Guru</button>
+<!-- MODAL FORM INPUT & EDIT GURU -->
+<div class="modal-overlay hidden" id="modalGuru">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="modalGuruTitle">Tambah Data Guru Baru</h3>
+      <button type="button" class="btn-close-modal" onclick="closeGuruModal()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <form onsubmit="handleSaveGuru(event)">
+      <input type="hidden" id="inputGuruEditId">
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>NIP / NIY (Nomor Induk Guru)</label>
+          <input type="text" id="inputNipGuru" placeholder="19xxxxxx / NIYxx" required>
+        </div>
+        <div class="form-group">
+          <label>Tanggal Lahir Guru</label>
+          <input type="date" id="inputTglLahirGuru" required>
+        </div>
+        <div class="form-group full-width">
+          <label>Nama Lengkap & Gelar</label>
+          <input type="text" id="inputNamaGuru" placeholder="Contoh: Dr. Ahmad Fauzi, M.Pd." required>
+        </div>
+        <div class="form-group">
+          <label>Mata Pelajaran Utama</label>
+          <select id="inputMapelGuru" data-master="mapel" required>
+            <option value="">-- Pilih Mapel --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status Kepegawaian</label>
+          <select id="inputKepegawaianGuru" data-master="kepegawaian">
+            <option value="">-- Pilih Status --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>No. Handphone / WhatsApp</label>
+          <input type="text" id="inputHpGuru" placeholder="08xxxxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label>Email Utama</label>
+          <input type="email" id="inputEmailGuru" placeholder="guru@sekolah.sch.id">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeGuruModal()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan Data Guru</button>
+      </div>
+    </form>
   </div>
-</form>
+</div>
