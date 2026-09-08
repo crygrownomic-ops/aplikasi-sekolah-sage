@@ -1,0 +1,60 @@
+<div class="section-title">
+  <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+  Input Presensi Siswa Real-Time (Per Jam Pelajaran)
+</div>
+
+<div class="form-grid" style="margin-bottom: 20px;">
+  <div class="form-group">
+    <label>Pilih Kelas Ajar Hari Ini</label>
+    <select data-master="kelas">
+      <option value="">-- Pilih Kelas --</option>
+    </select>
+  </div>
+</div>
+
+<p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">Daftar Murid:</p>
+
+<div style="overflow-x: auto;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+    <thead>
+      <tr style="background-color: var(--bg-main); color: var(--text-main);">
+        <th style="padding: 12px; border: 1px solid var(--border-color);">No</th>
+        <th style="padding: 12px; border: 1px solid var(--border-color);">NISN</th>
+        <th style="padding: 12px; border: 1px solid var(--border-color);">Nama Siswa</th>
+        <th style="padding: 12px; border: 1px solid var(--border-color); text-align: center;">Status Presensi Hari Ini</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 12px; border: 1px solid var(--border-color);">1</td>
+        <td style="padding: 12px; border: 1px solid var(--border-color);">0051234561</td>
+        <td style="padding: 12px; border: 1px solid var(--border-color); font-weight: 600;">Aditya Pratama</td>
+        <td style="padding: 12px; border: 1px solid var(--border-color); text-align: center;">
+          <select style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--input-border);">
+            <option value="H">Hadir</option>
+            <option value="S">Sakit</option>
+            <option value="I">Izin</option>
+            <option value="A">Alpa / Tanpa Keterangan</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 12px; border: 1px solid var(--border-color);">2</td>
+        <td style="padding: 12px; border: 1px solid var(--border-color);">0051234562</td>
+        <td style="padding: 12px; border: 1px solid var(--border-color); font-weight: 600;">Anisa Rahmawati</td>
+        <td style="padding: 12px; border: 1px solid var(--border-color); text-align: center;">
+          <select style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--input-border);">
+            <option value="H">Hadir</option>
+            <option value="S">Sakit</option>
+            <option value="I">Izin</option>
+            <option value="A">Alpa / Tanpa Keterangan</option>
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="form-actions" style="margin-top: 20px;">
+  <button type="button" class="btn btn-primary">Simpan Presensi Kelas</button>
+</div>

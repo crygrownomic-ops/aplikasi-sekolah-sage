@@ -1,0 +1,69 @@
+<div class="section-title">
+  <svg viewBox="0 0 24 24"><path d="M12 2H2v10h10V2zM22 2h-8v6h8V2zM22 10h-8v12h8V10zM12 14H2v8h10v-8z"/></svg>
+  Kelola Master Data Sekolah (Kustomisasi Mandiri)
+</div>
+
+<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+  Tambah atau hapus data master di bawah ini. Perubahan akan otomatis terintegrasi dan muncul di seluruh form aplikasi (Siswa, Guru, Jadwal & Presensi).
+</p>
+
+<!-- Grid 4 Kelompok Master Data -->
+<div class="master-data-grid">
+
+  <!-- 1. Master Rombongan Belajar (Kelas) -->
+  <div class="master-card">
+    <div class="master-card-header">
+      <h3>Rombongan Belajar (Kelas)</h3>
+    </div>
+    <form onsubmit="handleAddMasterItem(event, 'kelas')" class="inline-add-form">
+      <input type="text" id="inputMasterKelas" placeholder="Contoh: XII - IPA 2" required>
+      <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
+    </form>
+    <div class="master-list-container" id="listMasterKelas">
+      <!-- Item Rendered via JS -->
+    </div>
+  </div>
+
+  <!-- 2. Master Mata Pelajaran (Mapel) -->
+  <div class="master-card">
+    <div class="master-card-header">
+      <h3>Mata Pelajaran (Mapel)</h3>
+    </div>
+    <form onsubmit="handleAddMasterItem(event, 'mapel')" class="inline-add-form">
+      <input type="text" id="inputMasterMapel" placeholder="Contoh: Informatika / AI" required>
+      <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
+    </form>
+    <div class="master-list-container" id="listMasterMapel">
+      <!-- Item Rendered via JS -->
+    </div>
+  </div>
+
+  <!-- 3. Master Status Kepegawaian -->
+  <div class="master-card">
+    <div class="master-card-header">
+      <h3>Status Kepegawaian Guru</h3>
+    </div>
+    <form onsubmit="handleAddMasterItem(event, 'kepegawaian')" class="inline-add-form">
+      <input type="text" id="inputMasterKepegawaian" placeholder="Contoh: Guru Honor Daerah" required>
+      <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
+    </form>
+    <div class="master-list-container" id="listMasterKepegawaian">
+      <!-- Item Rendered via JS -->
+    </div>
+  </div>
+
+  <!-- 4. Master Jurusan / Program Keahlian -->
+  <div class="master-card">
+    <div class="master-card-header">
+      <h3>Jurusan / Program Keahlian</h3>
+    </div>
+    <form onsubmit="handleAddMasterItem(event, 'jurusan')" class="inline-add-form">
+      <input type="text" id="inputMasterJurusan" placeholder="Contoh: Rekayasa Perangkat Lunak" required>
+      <button type="submit" class="btn btn-primary btn-sm">+ Tambah</button>
+    </form>
+    <div class="master-list-container" id="listMasterJurusan">
+      <!-- Item Rendered via JS -->
+    </div>
+  </div>
+
+</div>

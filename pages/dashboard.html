@@ -1,0 +1,91 @@
+<div class="section-title">
+  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+  Dashboard Ringkasan Data Sekolah
+</div>
+
+<!-- 4 Grid Kartu Ringkasan Data -->
+<div class="dashboard-metrics-grid">
+  
+  <div class="metric-card">
+    <div class="metric-icon" style="background-color: var(--accent-soft);">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
+    </div>
+    <div class="metric-info">
+      <h3>Total Siswa Aktif</h3>
+      <p class="metric-number">1,240 Siswa</p>
+      <span class="metric-sub">Terdaftar di Buku Induk</span>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background-color: var(--accent-soft);">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <div class="metric-info">
+      <h3>Tenaga Pendidik (Guru)</h3>
+      <p class="metric-number">78 Guru</p>
+      <span class="metric-sub">PNS, PPPK & GTY</span>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background-color: var(--accent-soft);">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div class="metric-info">
+      <h3>Rombongan Belajar</h3>
+      <p class="metric-number">36 Kelas</p>
+      <span class="metric-sub">Kelas X, XI, dan XII</span>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon" style="background-color: var(--accent-soft);">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    </div>
+    <div class="metric-info">
+      <h3>Presensi Hari Ini</h3>
+      <p class="metric-number">96.8% Hadir</p>
+      <span class="metric-sub">32 Sakit / Izin, 4 Alpa</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Ringkasan Jadwal Mengajar Hari Ini -->
+<div style="margin-top: 28px;">
+  <div class="section-title" style="font-size: 15px;">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    Jadwal Mengajar Berlangsung Hari Ini
+  </div>
+  
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">
+      <thead>
+        <tr style="background-color: var(--bg-main); color: var(--text-main);">
+          <th style="padding: 12px; border: 1px solid var(--border-color);">Jam Ke</th>
+          <th style="padding: 12px; border: 1px solid var(--border-color);">Kelas</th>
+          <th style="padding: 12px; border: 1px solid var(--border-color);">Mata Pelajaran</th>
+          <th style="padding: 12px; border: 1px solid var(--border-color);">Guru Pengajar</th>
+          <th style="padding: 12px; border: 1px solid var(--border-color); text-align: center;">Status Kelas</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 12px; border: 1px solid var(--border-color);">Jam 1 - 2 (07:00 - 08:30)</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color); font-weight: 600;">X - A</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color);">Matematika Wajib</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color);">Dr. Ahmad Fauzi, M.Pd.</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color); text-align: center;"><span style="background: var(--accent-soft); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px;">Selesai</span></td>
+        </tr>
+        <tr>
+          <td style="padding: 12px; border: 1px solid var(--border-color);">Jam 3 - 4 (08:30 - 10:00)</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color); font-weight: 600;">XI - IPA 1</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color);">Fisika</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color);">Siti Nurhaliza, S.Pd.</td>
+          <td style="padding: 12px; border: 1px solid var(--border-color); text-align: center;"><span style="background: var(--primary-btn); color: #fff; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px;">Berlangsung</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,62 @@
+<div class="section-title">
+  <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  Buku Induk Peserta Didik (Standar Dinas Pendidikan)
+</div>
+
+<form onsubmit="event.preventDefault();">
+  <div class="form-grid">
+    <div class="form-group">
+      <label>NISN (Nomor Induk Siswa Nasional)</label>
+      <input type="text" placeholder="Contoh: 0051234567" required>
+    </div>
+    <div class="form-group">
+      <label>NIS (Nomor Induk Sekolah)</label>
+      <input type="text" placeholder="Contoh: 23241001" required>
+    </div>
+    <div class="form-group">
+      <label>NIK Siswa</label>
+      <input type="text" placeholder="16 Digit NIK sesuai KK">
+    </div>
+    <div class="form-group full-width">
+      <label>Nama Lengkap Siswa</label>
+      <input type="text" placeholder="Nama sesuai ijazah sebelumnya" required>
+    </div>
+    <div class="form-group">
+      <label>Tempat Lahir</label>
+      <input type="text" placeholder="Kota / Kabupaten">
+    </div>
+    <div class="form-group">
+      <label>Tanggal Lahir</label>
+      <input type="date">
+    </div>
+    <div class="form-group">
+      <label>Jenis Kelamin</label>
+      <select>
+        <option value="">-- Pilih --</option>
+        <option value="L">Laki-Laki</option>
+        <option value="P">Perempuan</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Jurusan / Program Keahlian</label>
+      <select data-master="jurusan">
+        <option value="">-- Pilih Jurusan --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Rombongan Belajar / Kelas</label>
+      <select data-master="kelas" required>
+        <option value="">-- Pilih Kelas --</option>
+      </select>
+    </div>
+    <div class="form-group full-width">
+      <label>Alamat Lengkap Siswa</label>
+      <textarea rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"></textarea>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-secondary">Batal</button>
+    <button type="submit" class="btn btn-primary">Simpan Data Siswa</button>
+  </div>
+</form>
