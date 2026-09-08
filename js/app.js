@@ -1,4 +1,4 @@
-// SISTEM AUTHENTICATION & SMART LOADER CADANGAN LENGKAP (ANTI FAIL & ANTI KOSONG)
+// SISTEM AUTHENTICATION & SMART LOADER CADANGAN LENGKAP (ANTI FAIL & AUTO CHECK)
 
 function checkAuthStatus() {
   const isLoggedIn = sessionStorage.getItem('siakad_auth');
@@ -39,7 +39,7 @@ function handleLogout() {
   }
 }
 
-// BUILT-IN TEMPLATES LENGKAP (CADANGAN JIKA FILE PADA FOLDER PAGES/ KOSONG / TERPOTONG)
+// BUILT-IN TEMPLATES LENGKAP CADANGAN (JIKA FILE HTML KOSONG / TERPOTONG)
 const builtInTemplates = {
   dashboard: `
     <div id="dashboardBirthdayNotice"></div>
@@ -402,7 +402,7 @@ const builtInTemplates = {
         Cetak & Generator Kartu Tanda Siswa
       </div>
       <button type="button" class="btn btn-primary" onclick="window.print()">
-        <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 0-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         Cetak Kartu Siswa
       </button>
     </div>
@@ -434,13 +434,14 @@ async function loadPage(pageName) {
     if (!response.ok) throw new Error(`File pages/${pageName}.html tidak ditemukan.`);
     const htmlContent = await response.text();
     
-    // PELINDUNG CANGGIH: Jika file HTML terpotong/tidak punya kontainer utama
-    if (!htmlContent.trim() || (pageName === 'kartusiswa' && !htmlContent.includes('studentCardContainer'))) {
-      throw new Error(`File pages/${pageName}.html terpotong.`);
-    }
+    // VERIFIKASI KEUTUHAN ISI FILE
+    if (!htmlContent.trim()) throw new Error("File HTML kosong.");
+    if (pageName === 'siswa' && !htmlContent.includes('inputSiswaNamaGlobal')) throw new Error("Form siswa terpotong.");
+    if (pageName === 'kartusiswa' && !htmlContent.includes('studentCardContainer')) throw new Error("Container kartu terpotong.");
     
     container.innerHTML = htmlContent;
   } catch (error) {
+    // FALLBACK KE TEMPLATE BAWAAN JS
     if (builtInTemplates[pageName]) {
       container.innerHTML = builtInTemplates[pageName];
     } else {
