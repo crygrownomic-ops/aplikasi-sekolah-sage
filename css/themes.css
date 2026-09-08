@@ -1,0 +1,93 @@
+/* ===================================================
+   5 VARIASI TEMA WARNA APLIKASI
+   =================================================== */
+
+/* 1. TEMA SAGE GREEN (Default - Teduh & Alami) */
+:root, [data-theme="sage"] {
+  --bg-main: #EAF0E8;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #2C3A2E;
+  --sidebar-hover: #3D4A3E;
+  --text-main: #2C3A2E;
+  --text-muted: #5C6B5E;
+  --border-color: #D3DDD0;
+  --input-bg: #F7F9F6;
+  --input-border: #C2D1BC;
+  --accent-soft: #D3DDD0;
+  --primary-btn: #2C3A2E;
+  --primary-btn-hover: #3D4A3E;
+  --brand-icon-bg: #A3B899;
+  --brand-icon-color: #2C3A2E;
+}
+
+/* 2. TEMA BIRU PENDIDIKAN (Formal & Elegan) */
+[data-theme="blue"] {
+  --bg-main: #EBF3FA;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #1E3A8A;
+  --sidebar-hover: #1D4ED8;
+  --text-main: #1E293B;
+  --text-muted: #64748B;
+  --border-color: #CBD5E1;
+  --input-bg: #F8FAFC;
+  --input-border: #94A3B8;
+  --accent-soft: #DBEAFE;
+  --primary-btn: #1E3A8A;
+  --primary-btn-hover: #2563EB;
+  --brand-icon-bg: #93C5FD;
+  --brand-icon-color: #1E3A8A;
+}
+
+/* 3. TEMA AMBER TERRACOTTA (Hangat & Estetik) */
+[data-theme="amber"] {
+  --bg-main: #FDF8F3;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #4A2E1A;
+  --sidebar-hover: #78350F;
+  --text-main: #291E13;
+  --text-muted: #786C60;
+  --border-color: #E6D7C3;
+  --input-bg: #FAF5EF;
+  --input-border: #D1C0AA;
+  --accent-soft: #F3E5D8;
+  --primary-btn: #4A2E1A;
+  --primary-btn-hover: #78350F;
+  --brand-icon-bg: #FDE68A;
+  --brand-icon-color: #4A2E1A;
+}
+
+/* 4. TEMA DARK SLATE (Modern & Anti Silau) */
+[data-theme="dark"] {
+  --bg-main: #0F172A;
+  --bg-card: #1E293B;
+  --bg-sidebar: #020617;
+  --sidebar-hover: #1E293B;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border-color: #334155;
+  --input-bg: #0F172A;
+  --input-border: #475569;
+  --accent-soft: #334155;
+  --primary-btn: #0284C7;
+  --primary-btn-hover: #0369A1;
+  --brand-icon-bg: #38BDF8;
+  --brand-icon-color: #0F172A;
+}
+
+/* 5. TEMA TEAL FRESH (Segar & Berseka) */
+[data-theme="teal"] {
+  --bg-main: #E6F4F1;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #134E4A;
+  --sidebar-hover: #0F766E;
+  --text-main: #042F2C;
+  --text-muted: #4A7A77;
+  --border-color: #B2DFDB;
+  --input-bg: #F0FDF4;
+  --input-border: #99F6E4;
+  --accent-soft: #CCFBF1;
+  --primary-btn: #134E4A;
+  --primary-btn-hover: #0F766E;
+  --brand-icon-bg: #2DD4BF;
+  --brand-icon-color: #134E4A;
+}

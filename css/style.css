@@ -1,0 +1,336 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100dvh;
+}
+
+/* ===================================================
+   SIDEBAR COLLAPSIBLE & EXPANDABLE (PERBAIKAN TOTAL)
+   =================================================== */
+.sidebar {
+  width: 72px; /* Lebar rapat saat awal */
+  height: 100vh;
+  background-color: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 10px;
+  gap: 10px;
+  flex-shrink: 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; /* Sembunyikan isi yang melimpah */
+  z-index: 100;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.06);
+}
+
+/* Melebar Mulus Saat Kursor Diarahkan (Hover) */
+.sidebar:hover {
+  width: 250px;
+}
+
+/* Brand Header di Sidebar */
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 228px; /* Ukuran tetap dalam kontainer sliding */
+  height: 48px;
+  padding: 0 4px;
+  margin-bottom: 12px;
+}
+
+.brand-logo-container {
+  width: 44px;
+  height: 44px;
+  background-color: var(--brand-icon-bg);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-icon-color);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.brand-logo-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brand-title {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sidebar:hover .brand-title {
+  opacity: 1;
+  visibility: visible;
+}
+
+.brand-title .app-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #FFFFFF;
+}
+
+.brand-title .app-sub {
+  font-size: 11px;
+  color: var(--brand-icon-bg);
+}
+
+/* Tombol Navigasi Sidebar */
+.sidebar .nav-item {
+  display: flex;
+  flex-direction: row; /* Wajib sejajar horizontal */
+  align-items: center;
+  width: 228px; /* Lebar utuh agar teks tidak terhimpit */
+  height: 48px; /* Tinggi tombol konsisten */
+  padding: 0 12px;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  color: var(--brand-icon-bg);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+}
+
+.sidebar .nav-item:hover,
+.sidebar .nav-item.active {
+  background-color: var(--sidebar-hover);
+  color: #FFFFFF;
+}
+
+.sidebar .nav-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Teks Label Tombol (Hanya Muncul Saat Sidebar Hover) */
+.sidebar .nav-label {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap; /* Mencegah teks turun ke bawah */
+  margin-left: 14px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sidebar:hover .nav-label {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===================================================
+   HEADER & AREA KERJA UTAMA
+   =================================================== */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.top-header {
+  padding: 16px 32px;
+  background-color: var(--bg-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.school-info h1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.school-contact-bar {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Area Konten Card */
+.content-area {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+  background-color: var(--bg-card);
+  margin: 20px 32px 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  border: 1px solid var(--border-color);
+}
+
+.page-view {
+  display: none;
+}
+
+.page-view.active {
+  display: block;
+}
+
+/* Section Title */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  padding-bottom: 10px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--bg-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Grid & Form Input */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 14px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: var(--input-bg);
+  color: var(--text-main);
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-btn);
+  background-color: var(--bg-card);
+}
+
+/* Button Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-btn);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+.btn-secondary {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* Theme Selector Cards */
+.theme-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.theme-card {
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: var(--input-bg);
+}
+
+.theme-card:hover, .theme-card.active {
+  border-color: var(--primary-btn);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.theme-color-preview {
+  height: 36px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+}
+
+/* Vector Icons */
+svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
