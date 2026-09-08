@@ -1,27 +1,35 @@
 <div class="section-title">
   <div class="section-title-left">
     <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    Buku Induk Peserta Didik (Per Rombongan Belajar)
+    Buku Induk Peserta Didik (Form 8355 Standar)
   </div>
-  <!-- TOMBOL TAMBAH SISWA DI LUAR (POJOK KANAN ATAS) -->
-  <button type="button" class="btn btn-primary" onclick="openAddSiswaModalGlobal()">
-    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    + Tambah Siswa Baru
-  </button>
+  <div class="header-action-btns">
+    <button type="button" class="btn btn-secondary" onclick="downloadSiswaCSVTemplate()">
+      ↓ Template CSV
+    </button>
+    <label class="btn btn-secondary" style="cursor: pointer;">
+      ↑ Import CSV
+      <input type="file" accept=".csv" onchange="importSiswaCSV(event)" style="display: none;">
+    </label>
+    <button type="button" class="btn btn-primary" onclick="openAddSiswaModalGlobal()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      + Tambah Siswa Baru
+    </button>
+  </div>
 </div>
 
 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
   Klik pada salah satu kartu kelas di bawah untuk melihat rincian detail murid pada kelas tersebut.
 </p>
 
-<!-- GRID KARTU KELAS DAN JUMLAH SISWA -->
+<!-- GRID KARTU KELAS -->
 <div class="class-card-grid" id="classCardContainer">
   <!-- Rendered via JS -->
 </div>
 
-<!-- 1. MODAL DETAIL SISWA PER KELAS (PURE TABLE VIEW DETAIL) -->
+<!-- 1. MODAL DETAIL SISWA PER KELAS -->
 <div class="modal-overlay hidden" id="modalSiswaDetail">
-  <div class="modal-card" style="max-width: 850px;">
+  <div class="modal-card" style="max-width: 900px;">
     <div class="modal-header">
       <h3 id="modalSiswaClassTitle">Detail Siswa Kelas</h3>
       <button type="button" class="btn-close-modal" onclick="closeSiswaDetailModal()">
@@ -34,12 +42,12 @@
         <thead>
           <tr>
             <th style="width: 40px; text-align: center;">No</th>
-            <th>NISN</th>
-            <th>NIS</th>
+            <th>NISN / NIS</th>
             <th>Nama Lengkap Siswa</th>
             <th>Jurusan</th>
             <th style="text-align: center;">L/P</th>
-            <th>Tempat, Tgl Lahir</th>
+            <th>Ortu (Ayah/Ibu)</th>
+            <th>Kontak HP</th>
             <th style="text-align: center; width: 80px;">Aksi</th>
           </tr>
         </thead>
@@ -51,11 +59,11 @@
   </div>
 </div>
 
-<!-- 2. MODAL FORM INPUT SISWA BARU (INPUT GLOBAL) -->
+<!-- 2. MODAL FORM INPUT SISWA BARU (8355 COMPLIANT) -->
 <div class="modal-overlay hidden" id="modalAddSiswaGlobal">
-  <div class="modal-card" style="max-width: 700px;">
+  <div class="modal-card" style="max-width: 780px;">
     <div class="modal-header">
-      <h3>Input Data Siswa Baru Buku Induk</h3>
+      <h3>Input Data Siswa Baru (Biodata Form 8355)</h3>
       <button type="button" class="btn-close-modal" onclick="closeAddSiswaModalGlobal()">
         <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -75,6 +83,7 @@
             <option value="">-- Pilih Jurusan --</option>
           </select>
         </div>
+
         <div class="form-group">
           <label>NISN (Nomor Induk Siswa Nasional)</label>
           <input type="text" id="inputSiswaNisnGlobal" placeholder="0051234567" required>
@@ -83,10 +92,12 @@
           <label>NIS (Nomor Induk Sekolah)</label>
           <input type="text" id="inputSiswaNisGlobal" placeholder="23241001" required>
         </div>
+
         <div class="form-group full-width">
           <label>Nama Lengkap Siswa</label>
           <input type="text" id="inputSiswaNamaGlobal" placeholder="Nama sesuai ijazah sebelumnya" required>
         </div>
+
         <div class="form-group">
           <label>Jenis Kelamin</label>
           <select id="inputSiswaJkGlobal" required>
@@ -95,6 +106,18 @@
           </select>
         </div>
         <div class="form-group">
+          <label>Agama Siswa</label>
+          <select id="inputSiswaAgamaGlobal">
+            <option value="Islam">Islam</option>
+            <option value="Kristen">Kristen</option>
+            <option value="Katolik">Katolik</option>
+            <option value="Hindu">Hindu</option>
+            <option value="Buddha">Buddha</option>
+            <option value="Khonghucu">Khonghucu</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label>Tempat Lahir</label>
           <input type="text" id="inputSiswaTempatLahirGlobal" placeholder="Kota / Kabupaten">
         </div>
@@ -102,10 +125,30 @@
           <label>Tanggal Lahir</label>
           <input type="date" id="inputSiswaTglLahirGlobal">
         </div>
-        <div class="form-group full-width">
+
+        <div class="form-group">
           <label>NIK Siswa</label>
           <input type="text" id="inputSiswaNikGlobal" placeholder="16 Digit NIK sesuai KK">
         </div>
+        <div class="form-group">
+          <label>No. HP Siswa / WhatsApp</label>
+          <input type="text" id="inputSiswaHpGlobal" placeholder="08xxxxxxxxxx">
+        </div>
+
+        <div class="form-group">
+          <label>Nama Ayah Kandung</label>
+          <input type="text" id="inputSiswaAyahGlobal" placeholder="Nama Ayah">
+        </div>
+        <div class="form-group">
+          <label>Nama Ibu Kandung</label>
+          <input type="text" id="inputSiswaIbuGlobal" placeholder="Nama Ibu">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Pekerjaan Orang Tua / Wali</label>
+          <input type="text" id="inputSiswaPekerjaanOrtuGlobal" placeholder="PNS / Swasta / Wiraswasta">
+        </div>
+
         <div class="form-group full-width">
           <label>Alamat Lengkap Siswa</label>
           <textarea id="inputSiswaAlamatGlobal" rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan"></textarea>

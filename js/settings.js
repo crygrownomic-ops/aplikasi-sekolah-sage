@@ -1,4 +1,4 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA, DROPDOWN & ULANG TAHUN
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, CSV IMPORT/EXPORT
 
 const defaultMasterData = {
   kelas: ['X - A', 'X - B', 'XI - IPA 1', 'XI - IPS 1', 'XII - IPA 1'],
@@ -75,21 +75,19 @@ function renderMasterDataUI() {
   });
 }
 
-// ===================================================
 // GURU MANAGEMENT
-// ===================================================
 function getGuruData() {
   const data = localStorage.getItem('siakad_guru_list');
   if (data) {
-    return JSON.parse(data);
-  } else {
-    const defaultGuru = [
-      { id: 1, nip: '198203152010011002', nama: 'Dr. Ahmad Fauzi, M.Pd.', mapel: 'Matematika Wajib', kepegawaian: 'PNS / ASN', tglLahir: '1982-09-15', hp: '081234567890', email: 'ahmad.fauzi@sekolah.sch.id' },
-      { id: 2, nip: '199005202018022001', nama: 'Siti Nurhaliza, S.Pd.', mapel: 'Fisika', kepegawaian: 'PPPK', tglLahir: '1990-09-20', hp: '085678901234', email: 'siti.nurhaliza@sekolah.sch.id' }
-    ];
-    localStorage.setItem('siakad_guru_list', JSON.stringify(defaultGuru));
-    return defaultGuru;
+    const parsed = JSON.parse(data);
+    if (parsed && parsed.length > 0) return parsed;
   }
+  
+  const defaultGuru = [
+    { id: 1, nama: 'Dr. Ahmad Fauzi, M.Pd.', nip: '198203152010011002', nuptk: '1234567890123456', tempatLahir: 'Pontianak', tglLahir: '1982-09-15', jk: 'L', agama: 'Islam', ijazah: 'S3 Pendidikan', tahunIjazah: '2015', mapel: 'Matematika Wajib', kepegawaian: 'PNS / ASN', jabatan: 'Guru Ahli Madya', pangkatGol: 'Pembina / IV-a', tmt: '2010-01-01', masaKerja: '14 Tahun', tmtSekolah: '2012-07-01', sertifikasi: 'Sudah', tahunSertifikasi: '2014', noRekening: '1234567890', hp: '081234567890', email: 'ahmad.fauzi@sekolah.sch.id' }
+  ];
+  localStorage.setItem('siakad_guru_list', JSON.stringify(defaultGuru));
+  return defaultGuru;
 }
 
 function openGuruModal(guruId = null) {
@@ -106,24 +104,33 @@ function openGuruModal(guruId = null) {
     if (guru) {
       title.innerText = 'Edit Data Guru';
       editIdInput.value = guru.id;
-      document.getElementById('inputNipGuru').value = guru.nip;
-      document.getElementById('inputNamaGuru').value = guru.nama;
+      document.getElementById('inputNamaGuru').value = guru.nama || '';
+      document.getElementById('inputNipGuru').value = guru.nip || '';
+      document.getElementById('inputNuptkGuru').value = guru.nuptk || '';
+      document.getElementById('inputTempatLahirGuru').value = guru.tempatLahir || '';
       document.getElementById('inputTglLahirGuru').value = guru.tglLahir || '';
+      document.getElementById('inputJkGuru').value = guru.jk || 'L';
+      document.getElementById('inputAgamaGuru').value = guru.agama || 'Islam';
+      document.getElementById('inputIjazahGuru').value = guru.ijazah || '';
+      document.getElementById('inputTahunIjazahGuru').value = guru.tahunIjazah || '';
       document.getElementById('inputMapelGuru').value = guru.mapel || '';
       document.getElementById('inputKepegawaianGuru').value = guru.kepegawaian || '';
+      document.getElementById('inputJabatanGuru').value = guru.jabatan || '';
+      document.getElementById('inputPangkatGolGuru').value = guru.pangkatGol || '';
+      document.getElementById('inputTmtGuru').value = guru.tmt || '';
+      document.getElementById('inputMasaKerjaGuru').value = guru.masaKerja || '';
+      document.getElementById('inputTmtSekolahGuru').value = guru.tmtSekolah || '';
+      document.getElementById('inputSertifikasiGuru').value = guru.sertifikasi || 'Belum';
+      document.getElementById('inputTahunSertifikasiGuru').value = guru.tahunSertifikasi || '';
+      document.getElementById('inputNoRekeningGuru').value = guru.noRekening || '';
       document.getElementById('inputHpGuru').value = guru.hp || '';
       document.getElementById('inputEmailGuru').value = guru.email || '';
     }
   } else {
     title.innerText = 'Tambah Data Guru Baru';
     editIdInput.value = '';
-    document.getElementById('inputNipGuru').value = '';
-    document.getElementById('inputNamaGuru').value = '';
-    document.getElementById('inputTglLahirGuru').value = '';
-    document.getElementById('inputMapelGuru').value = '';
-    document.getElementById('inputKepegawaianGuru').value = '';
-    document.getElementById('inputHpGuru').value = '';
-    document.getElementById('inputEmailGuru').value = '';
+    document.querySelectorAll('#modalGuru input').forEach(i => i.value = '');
+    document.querySelectorAll('#modalGuru select').forEach(s => s.selectedIndex = 0);
   }
 
   modal.classList.remove('hidden');
@@ -138,25 +145,37 @@ function handleSaveGuru(e) {
   e.preventDefault();
 
   const editId = document.getElementById('inputGuruEditId').value;
-  const nip = document.getElementById('inputNipGuru').value.trim();
-  const nama = document.getElementById('inputNamaGuru').value.trim();
-  const tglLahir = document.getElementById('inputTglLahirGuru').value;
-  const mapel = document.getElementById('inputMapelGuru').value;
-  const kepegawaian = document.getElementById('inputKepegawaianGuru').value;
-  const hp = document.getElementById('inputHpGuru').value.trim();
-  const email = document.getElementById('inputEmailGuru').value.trim();
+  const newGuruData = {
+    id: editId ? Number(editId) : Date.now(),
+    nama: document.getElementById('inputNamaGuru').value.trim(),
+    nip: document.getElementById('inputNipGuru').value.trim(),
+    nuptk: document.getElementById('inputNuptkGuru').value.trim(),
+    tempatLahir: document.getElementById('inputTempatLahirGuru').value.trim(),
+    tglLahir: document.getElementById('inputTglLahirGuru').value,
+    jk: document.getElementById('inputJkGuru').value,
+    agama: document.getElementById('inputAgamaGuru').value,
+    ijazah: document.getElementById('inputIjazahGuru').value.trim(),
+    tahunIjazah: document.getElementById('inputTahunIjazahGuru').value.trim(),
+    mapel: document.getElementById('inputMapelGuru').value,
+    kepegawaian: document.getElementById('inputKepegawaianGuru').value,
+    jabatan: document.getElementById('inputJabatanGuru').value.trim(),
+    pangkatGol: document.getElementById('inputPangkatGolGuru').value.trim(),
+    tmt: document.getElementById('inputTmtGuru').value,
+    masaKerja: document.getElementById('inputMasaKerjaGuru').value.trim(),
+    tmtSekolah: document.getElementById('inputTmtSekolahGuru').value,
+    sertifikasi: document.getElementById('inputSertifikasiGuru').value,
+    tahunSertifikasi: document.getElementById('inputTahunSertifikasiGuru').value.trim(),
+    noRekening: document.getElementById('inputNoRekeningGuru').value.trim(),
+    hp: document.getElementById('inputHpGuru').value.trim(),
+    email: document.getElementById('inputEmailGuru').value.trim()
+  };
 
   let list = getGuruData();
 
   if (editId) {
-    list = list.map(g => {
-      if (g.id === Number(editId)) {
-        return { ...g, nip, nama, tglLahir, mapel, kepegawaian, hp, email };
-      }
-      return g;
-    });
+    list = list.map(g => g.id === Number(editId) ? newGuruData : g);
   } else {
-    list.push({ id: Date.now(), nip, nama, tglLahir, mapel, kepegawaian, hp, email });
+    list.push(newGuruData);
   }
 
   localStorage.setItem('siakad_guru_list', JSON.stringify(list));
@@ -187,7 +206,7 @@ function renderGuruListUI() {
     tbody.innerHTML = `
       <tr>
         <td colspan="8" style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic;">
-          Belum ada data guru terdaftar. Klik "+ Tambah Guru Baru" di atas.
+          Belum ada data guru terdaftar. Klik "+ Tambah Guru" di atas.
         </td>
       </tr>
     `;
@@ -196,23 +215,21 @@ function renderGuruListUI() {
 
   let html = '';
   list.forEach((guru, idx) => {
-    const formattedTgl = guru.tglLahir ? new Date(guru.tglLahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
-    
     html += `
       <tr>
         <td style="text-align: center;">${idx + 1}</td>
-        <td style="font-weight: 600;">${guru.nip}</td>
         <td style="font-weight: 600;">${guru.nama}</td>
+        <td>${guru.nip || '-'}<br><span style="font-size: 11px; color: var(--text-muted);">NUPTK: ${guru.nuptk || '-'}</span></td>
         <td>${guru.mapel || '-'}</td>
-        <td><span style="background: var(--accent-soft); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${guru.kepegawaian || '-'}</span></td>
-        <td>${formattedTgl}</td>
-        <td style="font-size: 13px;">${guru.hp || ''}<br><span style="color: var(--text-muted); font-size: 11px;">${guru.email || ''}</span></td>
+        <td>${guru.ijazah || '-'}<br><span style="font-size: 11px; color: var(--text-muted);">${guru.tahunIjazah || ''}</span></td>
+        <td>${guru.pangkatGol || '-'}<br><span style="font-size: 11px; color: var(--text-muted);">${guru.jabatan || ''}</span></td>
+        <td><span style="background: var(--accent-soft); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${guru.sertifikasi || 'Belum'}</span></td>
         <td style="text-align: center;">
           <div class="action-btn-group">
             <button type="button" class="btn-icon-action" onclick="openGuruModal(${guru.id})" title="Edit Guru">
               <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button type="button" class="btn-icon-action del" onclick="deleteGuruItem(${guru.id})" title="Hapus Guru">
+            <button type="button" class="btn-icon-action del" onclick="deleteGuruItem(${guru.id})" title="Hapus">
               <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
@@ -224,22 +241,74 @@ function renderGuruListUI() {
   tbody.innerHTML = html;
 }
 
-// ===================================================
+function downloadGuruCSVTemplate() {
+  const headers = "nama,nip,nuptk,tempatLahir,tglLahir,jk,agama,ijazah,tahunIjazah,mapel,kepegawaian,jabatan,pangkatGol,sertifikasi,hp,email\n";
+  const sample = "Dr. Ahmad Fauzi,198203152010011002,1234567890123456,Pontianak,1982-09-15,L,Islam,S2 Pendidikan,2010,Matematika Wajib,PNS / ASN,Guru Ahli Madya,Pembina / IV-a,Sudah,081234567890,fauzi@sekolah.sch.id\n";
+  const blob = new Blob([headers + sample], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Template_Import_Guru.csv';
+  a.click();
+}
+
+function importGuruCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split('\n');
+    let importedCount = 0;
+    let list = getGuruData();
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',');
+      if (cols.length >= 2 && cols[0].trim()) {
+        list.push({
+          id: Date.now() + i,
+          nama: cols[0].trim(),
+          nip: cols[1] ? cols[1].trim() : '',
+          nuptk: cols[2] ? cols[2].trim() : '',
+          tempatLahir: cols[3] ? cols[3].trim() : '',
+          tglLahir: cols[4] ? cols[4].trim() : '',
+          jk: cols[5] ? cols[5].trim() : 'L',
+          agama: cols[6] ? cols[6].trim() : 'Islam',
+          ijazah: cols[7] ? cols[7].trim() : '',
+          tahunIjazah: cols[8] ? cols[8].trim() : '',
+          mapel: cols[9] ? cols[9].trim() : '',
+          kepegawaian: cols[10] ? cols[10].trim() : '',
+          jabatan: cols[11] ? cols[11].trim() : '',
+          pangkatGol: cols[12] ? cols[12].trim() : '',
+          sertifikasi: cols[13] ? cols[13].trim() : 'Belum',
+          hp: cols[14] ? cols[14].trim() : '',
+          email: cols[15] ? cols[15].trim() : ''
+        });
+        importedCount++;
+      }
+    }
+
+    localStorage.setItem('siakad_guru_list', JSON.stringify(list));
+    renderGuruListUI();
+    alert(`Berhasil mengimpor ${importedCount} data guru!`);
+  };
+  reader.readAsText(file);
+}
+
 // SISWA MANAGEMENT
-// ===================================================
 function getSiswaData() {
   const data = localStorage.getItem('siakad_siswa_list');
   if (data) {
-    return JSON.parse(data);
-  } else {
-    const defaultSiswa = [
-      { id: 101, nisn: '0051234561', nis: '23241001', nama: 'Aditya Pratama', kelas: 'X - A', jurusan: 'IPA (Ilmu Pengetahuan Alam)', jk: 'L', tempatLahir: 'Jakarta', tglLahir: '2008-04-12' },
-      { id: 102, nisn: '0051234562', nis: '23241002', nama: 'Anisa Rahmawati', kelas: 'X - A', jurusan: 'IPA (Ilmu Pengetahuan Alam)', jk: 'P', tempatLahir: 'Bandung', tglLahir: '2008-08-25' },
-      { id: 103, nisn: '0051234563', nis: '23241003', nama: 'Budi Santoso', kelas: 'XI - IPA 1', jurusan: 'IPA (Ilmu Pengetahuan Alam)', jk: 'L', tempatLahir: 'Bogor', tglLahir: '2007-02-10' }
-    ];
-    localStorage.setItem('siakad_siswa_list', JSON.stringify(defaultSiswa));
-    return defaultSiswa;
+    const parsed = JSON.parse(data);
+    if (parsed && parsed.length > 0) return parsed;
   }
+
+  const defaultSiswa = [
+    { id: 101, nisn: '0051234561', nis: '23241001', nama: 'Aditya Pratama', kelas: 'X - A', jurusan: 'IPA (Ilmu Pengetahuan Alam)', jk: 'L', agama: 'Islam', tempatLahir: 'Jakarta', tglLahir: '2008-04-12', nik: '3171000000000001', hp: '081299990000', ayah: 'Budi Pratama', ibu: 'Siti Rahma', pekerjaanOrtu: 'PNS', alamat: 'Jl. Merdeka No. 12', foto: '' },
+    { id: 102, nisn: '0051234562', nis: '23241002', nama: 'Anisa Rahmawati', kelas: 'X - A', jurusan: 'IPA (Ilmu Pengetahuan Alam)', jk: 'P', agama: 'Islam', tempatLahir: 'Bandung', tglLahir: '2008-08-25', nik: '3171000000000002', hp: '081299990001', ayah: 'Hendra', ibu: 'Dewi', pekerjaanOrtu: 'Wiraswasta', alamat: 'Jl. Mawar No. 4', foto: '' },
+    { id: 103, nisn: '0051234563', nis: '23241003', nama: 'Budi Santoso', kelas: 'XI - IPA 1', jurusan: 'IPA (Ilmu Pengetahuan Alam)', jk: 'L', agama: 'Islam', tempatLahir: 'Bogor', tglLahir: '2007-02-10', nik: '3171000000000003', hp: '081299990002', ayah: 'Suharto', ibu: 'Sri', pekerjaanOrtu: 'Swasta', alamat: 'Jl. Pemuda No. 8', foto: '' }
+  ];
+  localStorage.setItem('siakad_siswa_list', JSON.stringify(defaultSiswa));
+  return defaultSiswa;
 }
 
 function renderClassCardsUI() {
@@ -270,7 +339,6 @@ function renderClassCardsUI() {
   container.innerHTML = html;
 }
 
-// 1. OPEN MODAL DETAIL SISWA PER KELAS
 function openSiswaClassModal(kelas) {
   const modal = document.getElementById('modalSiswaDetail');
   const title = document.getElementById('modalSiswaClassTitle');
@@ -306,17 +374,15 @@ function renderSiswaTableUI(kelas) {
 
   let html = '';
   siswas.forEach((siswa, idx) => {
-    const formattedTgl = siswa.tglLahir ? `${siswa.tempatLahir || ''}, ${new Date(siswa.tglLahir).toLocaleDateString('id-ID')}` : '-';
-
     html += `
       <tr>
         <td style="text-align: center;">${idx + 1}</td>
-        <td style="font-weight: 600;">${siswa.nisn}</td>
-        <td>${siswa.nis}</td>
+        <td><b>${siswa.nisn}</b><br><span style="font-size: 11px; color: var(--text-muted);">NIS: ${siswa.nis}</span></td>
         <td style="font-weight: 600;">${siswa.nama}</td>
         <td>${siswa.jurusan || '-'}</td>
         <td style="text-align: center;">${siswa.jk}</td>
-        <td>${formattedTgl}</td>
+        <td>${siswa.ayah || '-'}<br><span style="font-size: 11px; color: var(--text-muted);">${siswa.ibu || ''}</span></td>
+        <td>${siswa.hp || '-'}</td>
         <td style="text-align: center;">
           <div class="action-btn-group">
             <button type="button" class="btn-icon-action del" onclick="deleteSiswaItem(${siswa.id}, '${kelas}')" title="Hapus Siswa">
@@ -331,23 +397,13 @@ function renderSiswaTableUI(kelas) {
   tbody.innerHTML = html;
 }
 
-// 2. OPEN & HANDLE MODAL FORM INPUT SISWA BARU GLOBAL (TOMBOL LUAR)
 function openAddSiswaModalGlobal() {
   const modal = document.getElementById('modalAddSiswaGlobal');
   if (!modal) return;
 
   populateDynamicSelects();
-
-  document.getElementById('inputSiswaKelasGlobal').value = '';
-  document.getElementById('inputSiswaJurusanGlobal').value = '';
-  document.getElementById('inputSiswaNisnGlobal').value = '';
-  document.getElementById('inputSiswaNisGlobal').value = '';
-  document.getElementById('inputSiswaNamaGlobal').value = '';
-  document.getElementById('inputSiswaJkGlobal').value = 'L';
-  document.getElementById('inputSiswaTempatLahirGlobal').value = '';
-  document.getElementById('inputSiswaTglLahirGlobal').value = '';
-  document.getElementById('inputSiswaNikGlobal').value = '';
-  document.getElementById('inputSiswaAlamatGlobal').value = '';
+  document.querySelectorAll('#modalAddSiswaGlobal input').forEach(i => i.value = '');
+  document.querySelectorAll('#modalAddSiswaGlobal textarea').forEach(t => t.value = '');
 
   modal.classList.remove('hidden');
 }
@@ -360,25 +416,35 @@ function closeAddSiswaModalGlobal() {
 function handleSaveSiswaGlobal(e) {
   e.preventDefault();
 
-  const kelas = document.getElementById('inputSiswaKelasGlobal').value;
-  const jurusan = document.getElementById('inputSiswaJurusanGlobal').value;
-  const nisn = document.getElementById('inputSiswaNisnGlobal').value.trim();
-  const nis = document.getElementById('inputSiswaNisGlobal').value.trim();
-  const nama = document.getElementById('inputSiswaNamaGlobal').value.trim();
-  const jk = document.getElementById('inputSiswaJkGlobal').value;
-  const tempatLahir = document.getElementById('inputSiswaTempatLahirGlobal').value.trim();
-  const tglLahir = document.getElementById('inputSiswaTglLahirGlobal').value;
-  const nik = document.getElementById('inputSiswaNikGlobal').value.trim();
-  const alamat = document.getElementById('inputSiswaAlamatGlobal').value.trim();
+  const newSiswa = {
+    id: Date.now(),
+    kelas: document.getElementById('inputSiswaKelasGlobal').value,
+    jurusan: document.getElementById('inputSiswaJurusanGlobal').value,
+    nisn: document.getElementById('inputSiswaNisnGlobal').value.trim(),
+    nis: document.getElementById('inputSiswaNisGlobal').value.trim(),
+    nama: document.getElementById('inputSiswaNamaGlobal').value.trim(),
+    jk: document.getElementById('inputSiswaJkGlobal').value,
+    agama: document.getElementById('inputSiswaAgamaGlobal').value,
+    tempatLahir: document.getElementById('inputSiswaTempatLahirGlobal').value.trim(),
+    tglLahir: document.getElementById('inputSiswaTglLahirGlobal').value,
+    nik: document.getElementById('inputSiswaNikGlobal').value.trim(),
+    hp: document.getElementById('inputSiswaHpGlobal').value.trim(),
+    ayah: document.getElementById('inputSiswaAyahGlobal').value.trim(),
+    ibu: document.getElementById('inputSiswaIbuGlobal').value.trim(),
+    pekerjaanOrtu: document.getElementById('inputSiswaPekerjaanOrtuGlobal').value.trim(),
+    alamat: document.getElementById('inputSiswaAlamatGlobal').value.trim(),
+    foto: ''
+  };
 
   let list = getSiswaData();
-  list.push({ id: Date.now(), nisn, nis, nama, kelas, jurusan, tempatLahir, tglLahir, jk, nik, alamat });
+  list.push(newSiswa);
 
   localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
 
   closeAddSiswaModalGlobal();
   renderClassCardsUI();
-  alert(`Siswa ${nama} berhasil didaftarkan ke kelas ${kelas}!`);
+  renderStudentCardsUI();
+  alert(`Siswa ${newSiswa.nama} berhasil didaftarkan ke kelas ${newSiswa.kelas}!`);
 }
 
 function deleteSiswaItem(id, kelas) {
@@ -389,12 +455,137 @@ function deleteSiswaItem(id, kelas) {
     localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
     renderSiswaTableUI(kelas);
     renderClassCardsUI();
+    renderStudentCardsUI();
   }
 }
 
-// ===================================================
-// POPULATE DROPDOWNS & NOTIFIKASI
-// ===================================================
+function downloadSiswaCSVTemplate() {
+  const headers = "kelas,jurusan,nisn,nis,nama,jk,agama,tempatLahir,tglLahir,nik,hp,ayah,ibu,pekerjaanOrtu,alamat\n";
+  const sample = "X - A,IPA (Ilmu Pengetahuan Alam),0051234567,23241001,Aditya Pratama,L,Islam,Jakarta,2008-04-12,3171000000000001,081299990000,Budi Pratama,Siti Rahma,PNS,Jl. Merdeka No. 12\n";
+  const blob = new Blob([headers + sample], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Template_Import_Siswa_8355.csv';
+  a.click();
+}
+
+function importSiswaCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split('\n');
+    let importedCount = 0;
+    let list = getSiswaData();
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',');
+      if (cols.length >= 5 && cols[4].trim()) {
+        list.push({
+          id: Date.now() + i,
+          kelas: cols[0] ? cols[0].trim() : 'X - A',
+          jurusan: cols[1] ? cols[1].trim() : '',
+          nisn: cols[2] ? cols[2].trim() : '',
+          nis: cols[3] ? cols[3].trim() : '',
+          nama: cols[4].trim(),
+          jk: cols[5] ? cols[5].trim() : 'L',
+          agama: cols[6] ? cols[6].trim() : 'Islam',
+          tempatLahir: cols[7] ? cols[7].trim() : '',
+          tglLahir: cols[8] ? cols[8].trim() : '',
+          nik: cols[9] ? cols[9].trim() : '',
+          hp: cols[10] ? cols[10].trim() : '',
+          ayah: cols[11] ? cols[11].trim() : '',
+          ibu: cols[12] ? cols[12].trim() : '',
+          pekerjaanOrtu: cols[13] ? cols[13].trim() : '',
+          alamat: cols[14] ? cols[14].trim() : '',
+          foto: ''
+        });
+        importedCount++;
+      }
+    }
+
+    localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
+    renderClassCardsUI();
+    renderStudentCardsUI();
+    alert(`Berhasil mengimpor ${importedCount} data siswa ke Buku Induk!`);
+  };
+  reader.readAsText(file);
+}
+
+// RENDER KARTU SISWA GENERATOR
+function renderStudentCardsUI() {
+  const container = document.getElementById('studentCardContainer');
+  const selectClass = document.getElementById('selectClassKartu');
+  if (!container) return;
+
+  const selectedClass = selectClass ? selectClass.value : '';
+  const siswas = getSiswaData();
+  const schoolName = localStorage.getItem('school_name') || 'SMA NEGERI 1 DIGITAL';
+  const schoolLogo = localStorage.getItem('school_logo');
+
+  const filtered = selectedClass ? siswas.filter(s => s.kelas === selectedClass) : siswas;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 30px; text-align: center; background: var(--input-bg); border: 1px dashed var(--border-color); border-radius: 12px;">
+        <p style="font-size: 14px; color: var(--text-muted); font-weight: 600;">Belum ada data siswa untuk kelas ini.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Tambahkan siswa di menu <b>Buku Induk Siswa</b> atau ubah filter kelas di atas.</p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(siswa => {
+    const photoSrc = siswa.foto ? siswa.foto : '';
+
+    html += `
+      <div class="student-id-card">
+        <div class="id-card-header">
+          <div class="id-card-logo">
+            ${schoolLogo ? `<img src="${schoolLogo}">` : `<svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`}
+          </div>
+          <div class="id-card-school-title">${schoolName}</div>
+        </div>
+
+        <div class="id-card-body">
+          <label class="id-card-photo-box" title="Klik untuk upload foto siswa">
+            ${photoSrc ? `<img src="${photoSrc}">` : `<span>+ Upload Foto</span>`}
+            <input type="file" accept="image/*" onchange="uploadSiswaPhoto(event, ${siswa.id})" style="display:none;">
+          </label>
+
+          <div class="id-card-details">
+            <div class="id-card-name">${siswa.nama}</div>
+            <div class="id-card-row"><strong>NISN:</strong> ${siswa.nisn || '-'}</div>
+            <div class="id-card-row"><strong>NIS:</strong> ${siswa.nis || '-'}</div>
+            <div class="id-card-row"><strong>Kelas:</strong> ${siswa.kelas || '-'}</div>
+            <div class="id-card-row"><strong>Jurusan:</strong> ${siswa.jurusan || '-'}</div>
+          </div>
+        </div>
+
+        <div class="id-card-footer">KARTU TANDA SISWA RESMI</div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function uploadSiswaPhoto(event, siswaId) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let list = getSiswaData();
+    list = list.map(s => s.id === siswaId ? { ...s, foto: e.target.result } : s);
+    localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
+    renderStudentCardsUI();
+  };
+  reader.readAsDataURL(file);
+}
+
 function populateDynamicSelects() {
   const jurusanSelects = document.querySelectorAll('select[data-master="jurusan"]');
   const jurusans = getMasterData('jurusan');
@@ -409,7 +600,7 @@ function populateDynamicSelects() {
   const kelass = getMasterData('kelas');
   kelasSelects.forEach(select => {
     const currentVal = select.value;
-    select.innerHTML = '<option value="">-- Pilih Kelas --</option>' +
+    select.innerHTML = '<option value="">-- Semua Kelas --</option>' +
       kelass.map(k => `<option value="${k}">${k}</option>`).join('');
     if (currentVal && kelass.includes(currentVal)) select.value = currentVal;
   });
