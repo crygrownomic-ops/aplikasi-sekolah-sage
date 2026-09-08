@@ -1,5 +1,180 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, CSV IMPORT/EXPORT
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, BACKUP & RESTORE, SUPABASE ADAPTER
 
+// ===================================================
+// LOGIKA BACKUP & RESTORE DATABASE (EXPORT / IMPORT JSON)
+// ===================================================
+
+function exportDatabaseJSON() {
+  const backupData = {
+    app_title: "SIAKAD_BACKUP_DATABASE",
+    version: "1.0",
+    export_date: new Date().toLocaleString('id-ID'),
+    school_info: {
+      name: localStorage.getItem('school_name') || '',
+      email: localStorage.getItem('school_email') || '',
+      phone: localStorage.getItem('school_phone') || '',
+      logo: localStorage.getItem('school_logo') || ''
+    },
+    settings: {
+      app_theme: localStorage.getItem('app_theme') || 'sage',
+      storage_mode: localStorage.getItem('storage_mode') || 'local',
+      supabase_url: localStorage.getItem('supabase_url') || '',
+      supabase_key: localStorage.getItem('supabase_key') || ''
+    },
+    master_data: {
+      kelas: getMasterData('kelas'),
+      mapel: getMasterData('mapel'),
+      kepegawaian: getMasterData('kepegawaian'),
+      jurusan: getMasterData('jurusan')
+    },
+    guru_list: getGuruData(),
+    siswa_list: getSiswaData()
+  };
+
+  const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+  const downloadAnchor = document.createElement('a');
+  
+  const today = new Date();
+  const dateStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
+  
+  downloadAnchor.setAttribute("href", jsonString);
+  downloadAnchor.setAttribute("download", `BACKUP_SIAKAD_${dateStr}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+
+  alert('Backup database berhasil diunduh ke komputer Abah!');
+}
+
+function importDatabaseJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!confirm('PERINGATAN!\n\nMengimpor file backup ini akan memperbarui dan menimpa database saat ini.\nApakah Abah yakin ingin melanjutkan?')) {
+    event.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+
+      if (data.guru_list) localStorage.setItem('siakad_guru_list', JSON.stringify(data.guru_list));
+      if (data.siswa_list) localStorage.setItem('siakad_siswa_list', JSON.stringify(data.siswa_list));
+      
+      if (data.master_data) {
+        if (data.master_data.kelas) localStorage.setItem('master_kelas', JSON.stringify(data.master_data.kelas));
+        if (data.master_data.mapel) localStorage.setItem('master_mapel', JSON.stringify(data.master_data.mapel));
+        if (data.master_data.kepegawaian) localStorage.setItem('master_kepegawaian', JSON.stringify(data.master_data.kepegawaian));
+        if (data.master_data.jurusan) localStorage.setItem('master_jurusan', JSON.stringify(data.master_data.jurusan));
+      }
+
+      if (data.school_info) {
+        if (data.school_info.name) localStorage.setItem('school_name', data.school_info.name);
+        if (data.school_info.email) localStorage.setItem('school_email', data.school_info.email);
+        if (data.school_info.phone) localStorage.setItem('school_phone', data.school_info.phone);
+        if (data.school_info.logo) localStorage.setItem('school_logo', data.school_info.logo);
+      }
+
+      if (data.settings) {
+        if (data.settings.app_theme) localStorage.setItem('app_theme', data.settings.app_theme);
+        if (data.settings.storage_mode) localStorage.setItem('storage_mode', data.settings.storage_mode);
+        if (data.settings.supabase_url) localStorage.setItem('supabase_url', data.settings.supabase_url);
+        if (data.settings.supabase_key) localStorage.setItem('supabase_key', data.settings.supabase_key);
+      }
+
+      alert('RESTORE BERHASIL! 🎉\nDatabase berhasil dimuat ulang. Aplikasi akan melakukan Refresh.');
+      window.location.reload();
+    } catch (err) {
+      alert('Gagal merestore database! Pastikan file yang diunggah berformat .json backup resmi SIAKAD.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetDatabaseToDefault() {
+  if (confirm('APAKAH ABAH BENAR-BENAR YAKIN?\n\nSemua data guru, siswa, master data, dan logo akan dihapus secara permanen dari browser ini.')) {
+    localStorage.clear();
+    alert('Database telah dibersihkan sepenuhnya!');
+    window.location.reload();
+  }
+}
+
+function toggleStorageModeUI() {
+  const modeSelect = document.getElementById('selectStorageMode');
+  const supabaseBox = document.getElementById('supabaseConfigContainer');
+  if (!modeSelect || !supabaseBox) return;
+
+  const selectedMode = modeSelect.value;
+  localStorage.setItem('storage_mode', selectedMode);
+
+  if (selectedMode === 'supabase') {
+    supabaseBox.style.display = 'block';
+  } else {
+    supabaseBox.style.display = 'none';
+  }
+}
+
+// ADAPTOR HYBRID STORAGE (LOCAL & SUPABASE CLOUD)
+const DB = {
+  isSupabaseActive() {
+    const mode = localStorage.getItem('storage_mode') || 'local';
+    const url = localStorage.getItem('supabase_url');
+    const key = localStorage.getItem('supabase_key');
+    return mode === 'supabase' && Boolean(url && key && window.supabase);
+  },
+
+  getClient() {
+    if (this.isSupabaseActive()) {
+      const url = localStorage.getItem('supabase_url');
+      const key = localStorage.getItem('supabase_key');
+      return window.supabase.createClient(url, key);
+    }
+    return null;
+  },
+
+  async migrateLocalToSupabase() {
+    if (!this.isSupabaseActive()) {
+      alert('Silakan aktifkan Mode Supabase dan simpan URL & Anon Key terlebih dahulu!');
+      return;
+    }
+
+    try {
+      const client = this.getClient();
+      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel'];
+
+      for (const key of keys) {
+        const localData = localStorage.getItem(key);
+        if (localData) {
+          const parsed = JSON.parse(localData);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            await client.from(key).upsert(parsed);
+          }
+        }
+      }
+      alert('Berhasil! Data lokal berhasil diunggah dan disinkronkan ke Supabase Cloud 🎉');
+    } catch (err) {
+      alert('Gagal migrasi data ke Supabase: ' + err.message);
+    }
+  }
+};
+
+function saveSupabaseConfig() {
+  const url = document.getElementById('inputSupabaseUrl').value.trim();
+  const key = document.getElementById('inputSupabaseKey').value.trim();
+
+  localStorage.setItem('supabase_url', url);
+  localStorage.setItem('supabase_key', key);
+
+  if (url && key) {
+    alert('Koneksi Supabase berhasil disimpan!');
+  } else {
+    alert('Kredensial dikosongkan. Kembali ke Mode Lokal.');
+  }
+}
+
+// DEFAULT MASTER DATA
 const defaultMasterData = {
   kelas: ['X - A', 'X - B', 'XI - IPA 1', 'XI - IPS 1', 'XII - IPA 1'],
   mapel: ['Matematika Wajib', 'Bahasa Indonesia', 'Bahasa Inggris', 'Fisika', 'Pendidikan Agama', 'Biologi', 'Kimia', 'Sejarah'],
@@ -744,10 +919,21 @@ function loadSchoolSettings() {
   const nameInput = document.getElementById('inputNamaSekolah');
   const emailInput = document.getElementById('inputEmailSekolah');
   const phoneInput = document.getElementById('inputTelpSekolah');
+  const urlInput = document.getElementById('inputSupabaseUrl');
+  const keyInput = document.getElementById('inputSupabaseKey');
+  const modeSelect = document.getElementById('selectStorageMode');
 
   if (nameInput && localStorage.getItem('school_name')) nameInput.value = localStorage.getItem('school_name');
   if (emailInput && localStorage.getItem('school_email')) emailInput.value = localStorage.getItem('school_email');
   if (phoneInput && localStorage.getItem('school_phone')) phoneInput.value = localStorage.getItem('school_phone');
+  if (urlInput && localStorage.getItem('supabase_url')) urlInput.value = localStorage.getItem('supabase_url');
+  if (keyInput && localStorage.getItem('supabase_key')) keyInput.value = localStorage.getItem('supabase_key');
+  
+  if (modeSelect) {
+    const savedMode = localStorage.getItem('storage_mode') || 'local';
+    modeSelect.value = savedMode;
+    toggleStorageModeUI();
+  }
 
   updateHeaderUI();
 }
