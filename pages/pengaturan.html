@@ -31,7 +31,32 @@
   </div>
 </form>
 
-<!-- 2. PILIH FOLDER KOMPUTER & KEAMANAN LOKAL (FITUR BARU ANTI HAPUS) -->
+<!-- 2. PERIODE AKADEMIK & TAHUN AJARAN (UPDATED MANDIRI) -->
+<form onsubmit="saveAcademicPeriod(event)" style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
+  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Periode Akademik & Tahun Ajaran Aktif</h3>
+  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+    Atur dan perbarui Tahun Ajaran serta Semester aktif secara mandiri agar penggunaan aplikasi dapat berjalan jangka panjang.
+  </p>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Tahun Ajaran (Contoh: 2026/2027)</label>
+      <input type="text" id="inputTahunAjaran" placeholder="2026/2027" required>
+    </div>
+    <div class="form-group">
+      <label>Semester Aktif</label>
+      <select id="selectSemester" required>
+        <option value="Ganjil">Ganjil</option>
+        <option value="Genap">Genap</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-actions" style="border-top: none; padding-top: 10px;">
+    <button type="submit" class="btn btn-primary">Simpan Periode Akademik</button>
+  </div>
+</form>
+
+<!-- 3. PILIH FOLDER KOMPUTER & KEAMANAN LOKAL (FITUR BARU ANTI HAPUS) -->
 <div style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
   <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Penyimpanan Harddisk Lokal & Proteksi Anti-Hapus</h3>
   <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
@@ -84,7 +109,7 @@
   </div>
 </div>
 
-<!-- 3. MODE SUPABASE CLOUD OPTIONAL -->
+<!-- 4. MODE SUPABASE CLOUD OPTIONAL -->
 <div style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
   <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Database Cloud Online (Supabase Optional)</h3>
   <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
@@ -123,7 +148,7 @@
   </div>
 </div>
 
-<!-- 4. PILIHAN TEMA WARNA APLIKASI (INTERAKTIF LANGSUNG BERUBAH) -->
+<!-- 5. PILIHAN TEMA WARNA APLIKASI (INTERAKTIF LANGSUNG BERUBAH) -->
 <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
   <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Pilihan Tema Warna Tampilan</h3>
   <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">

@@ -6,7 +6,8 @@ function checkAuthStatus() {
 
   if (isLoggedIn === 'true') {
     if (loginOverlay) loginOverlay.classList.add('hidden');
-    loadPage('dashboard');
+    const lastPage = localStorage.getItem('active_page') || 'dashboard';
+    loadPage(lastPage);
   } else {
     if (loginOverlay) loginOverlay.classList.remove('hidden');
   }
@@ -24,7 +25,8 @@ function handleLogin(e) {
     if (errorMsg) errorMsg.style.display = 'none';
 
     document.getElementById('loginOverlay').classList.add('hidden');
-    loadPage('dashboard');
+    const lastPage = localStorage.getItem('active_page') || 'dashboard';
+    loadPage(lastPage);
   } else {
     if (errorMsg) errorMsg.style.display = 'block';
   }
@@ -39,55 +41,115 @@ function handleLogout() {
   }
 }
 
-// BUILT-IN TEMPLATES LENGKAP CADANGAN (JIKA FILE HTML KOSONG / TERPOTONG)
+// BUILT-IN TEMPLATES LENGKAP CADANGAN (JIKA FILE HTML KOSONG / TERPOTONG / MISSING)
 const builtInTemplates = {
   dashboard: `
+    <!-- BANNER UCAPAN ULANG TAHUN DYNAMIC -->
     <div id="dashboardBirthdayNotice"></div>
+
+    <!-- TITLE & HEADER DASHBOARD -->
     <div class="section-title">
       <div class="section-title-left">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard Ringkasan Data Sekolah
+        Dashboard Ringkasan & Pusat Kendali Sekolah
       </div>
+      <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;" id="dashTodayDate"></div>
     </div>
+
+    <!-- METRICS STATISTIK UTAMA (AUTO RECALCULATE) -->
     <div class="dashboard-metrics-grid">
-      <div class="metric-card">
+      <div class="metric-card" onclick="loadPage('siswa')" style="cursor: pointer;" title="Klik untuk lihat Buku Induk Siswa">
         <div class="metric-icon" style="background-color: var(--accent-soft);">
           <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-3-3.87"/><path d="M9 21v-2a4 4 0 0 1 3-3.87"/><circle cx="9" cy="7" r="4"/></svg>
         </div>
         <div class="metric-info">
           <h3>Total Siswa Aktif</h3>
-          <p class="metric-number">1,240 Siswa</p>
-          <span class="metric-sub">Terdaftar di Buku Induk</span>
+          <p class="metric-number" id="dashCountSiswa">0</p>
+          <span class="metric-sub">Terdaftar di Buku Induk (Form 8355)</span>
         </div>
       </div>
-      <div class="metric-card">
+
+      <div class="metric-card" onclick="loadPage('guru')" style="cursor: pointer;" title="Klik untuk lihat Master Guru">
         <div class="metric-icon" style="background-color: var(--accent-soft);">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         <div class="metric-info">
           <h3>Tenaga Pendidik (Guru)</h3>
-          <p class="metric-number">78 Guru</p>
-          <span class="metric-sub">PNS, PPPK & GTY</span>
+          <p class="metric-number" id="dashCountGuru">0</p>
+          <span class="metric-sub">Guru & Staf Terdaftar</span>
         </div>
       </div>
-      <div class="metric-card">
+
+      <div class="metric-card" onclick="loadPage('masterdata')" style="cursor: pointer;" title="Klik untuk lihat Kelola Master Data">
         <div class="metric-icon" style="background-color: var(--accent-soft);">
           <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </div>
         <div class="metric-info">
           <h3>Rombongan Belajar</h3>
-          <p class="metric-number">36 Kelas</p>
-          <span class="metric-sub">Kelas X, XI, dan XII</span>
+          <p class="metric-number" id="dashCountKelas">0</p>
+          <span class="metric-sub">Kelas Aktif Dikelola</span>
         </div>
       </div>
-      <div class="metric-card">
+
+      <div class="metric-card" onclick="loadPage('absensi')" style="cursor: pointer;" title="Klik untuk Kelola Presensi">
         <div class="metric-icon" style="background-color: var(--accent-soft);">
           <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         </div>
         <div class="metric-info">
           <h3>Presensi Hari Ini</h3>
-          <p class="metric-number">96.8% Hadir</p>
-          <span class="metric-sub">32 Sakit / Izin, 4 Alpa</span>
+          <p class="metric-number" id="dashPresensiPercent">0%</p>
+          <span class="metric-sub" id="dashPresensiSub">Belum ada input presensi</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPLIT GRID: JADWAL HARI INI & PINTASAN APLIKASI -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 24px;">
+      <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; stroke: var(--primary); fill: none; stroke-width: 2;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Jadwal Pelajaran Hari Ini (<span id="dashTodayName">-</span>)
+          </h3>
+          <button type="button" class="btn btn-secondary" onclick="loadPage('jadwal')" style="font-size: 12px; padding: 4px 10px;">
+            Kelola Jadwal →
+          </button>
+        </div>
+        <div class="table-scroll-container" style="max-height: 280px;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">No</th>
+                <th>Jam Pelajaran</th>
+                <th>Kelas</th>
+                <th>Mata Pelajaran</th>
+                <th>Guru Pengajar</th>
+              </tr>
+            </thead>
+            <tbody id="dashTableJadwalHariIni"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;">
+          <h3 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 14px;">Akses Cepat Modul</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="loadPage('siswa')" style="justify-content: flex-start; text-align: left; padding: 10px;">📖 Buku Induk</button>
+            <button type="button" class="btn btn-secondary" onclick="loadPage('kartusiswa')" style="justify-content: flex-start; text-align: left; padding: 10px;">🎴 Kartu Siswa</button>
+            <button type="button" class="btn btn-secondary" onclick="loadPage('guru')" style="justify-content: flex-start; text-align: left; padding: 10px;">👨‍🏫 Master Guru</button>
+            <button type="button" class="btn btn-secondary" onclick="loadPage('absensi')" style="justify-content: flex-start; text-align: left; padding: 10px;">✅ Presensi Siswa</button>
+          </div>
+        </div>
+
+        <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px;">
+          <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">🔒 Proteksi Data Harddisk</h4>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
+            Penyimpanan terhubung secara lokal. Data tersimpan otomatis dan kebal terhadap pembersihan cache browser.
+          </p>
+          <button type="button" class="btn btn-secondary" onclick="loadPage('pengaturan')" style="width: 100%; font-size: 12px;">
+            Pengaturan Backup & Sinkronisasi
+          </button>
         </div>
       </div>
     </div>
@@ -100,10 +162,10 @@ const builtInTemplates = {
         Database Master Guru & Tenaga Pendidik
       </div>
       <div class="header-action-btns">
-        <button type="button" class="btn btn-secondary" onclick="downloadGuruCSVTemplate()">↓ Template CSV</button>
+        <button type="button" class="btn btn-secondary" onclick="downloadGuruExcelTemplate()">↓ Template Excel (.xlsx)</button>
         <label class="btn btn-secondary" style="cursor: pointer;">
-          ↑ Import CSV
-          <input type="file" accept=".csv" onchange="importGuruCSV(event)" style="display: none;">
+          ↑ Import Excel
+          <input type="file" accept=".xlsx, .xls" onchange="importGuruExcel(event)" style="display: none;">
         </label>
         <button type="button" class="btn btn-primary" onclick="openGuruModal()">
           <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -257,10 +319,10 @@ const builtInTemplates = {
         Buku Induk Peserta Didik (Form 8355 Standar)
       </div>
       <div class="header-action-btns">
-        <button type="button" class="btn btn-secondary" onclick="downloadSiswaCSVTemplate()">↓ Template CSV</button>
+        <button type="button" class="btn btn-secondary" onclick="downloadSiswaExcelTemplate()">↓ Template Excel (.xlsx)</button>
         <label class="btn btn-secondary" style="cursor: pointer;">
-          ↑ Import CSV
-          <input type="file" accept=".csv" onchange="importSiswaCSV(event)" style="display: none;">
+          ↑ Import Excel
+          <input type="file" accept=".xlsx, .xls" onchange="importSiswaExcel(event)" style="display: none;">
         </label>
         <button type="button" class="btn btn-primary" onclick="openAddSiswaModalGlobal()">
           <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -418,6 +480,180 @@ const builtInTemplates = {
       </p>
     </div>
     <div class="student-id-cards-grid" id="studentCardContainer"></div>
+  `,
+
+  jadwal: `
+    <div class="section-title">
+      <div class="section-title-left">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Manajemen Jadwal Mengajar & Alokasi Kelas
+      </div>
+    </div>
+    <form onsubmit="handleSaveJadwal(event)" style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 24px;">
+      <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">+ Tambah Alokasi Jadwal Baru</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Pilih Hari</label>
+          <select id="inputJadwalHari" required>
+            <option value="Senin">Senin</option>
+            <option value="Selasa">Selasa</option>
+            <option value="Rabu">Rabu</option>
+            <option value="Kamis">Kamis</option>
+            <option value="Jumat">Jumat</option>
+            <option value="Sabtu">Sabtu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jam Pelajaran Ke-</label>
+          <select id="inputJadwalJam" required>
+            <option value="Jam 1 - 2 (07:00 - 08:30)">Jam 1 - 2 (07:00 - 08:30)</option>
+            <option value="Jam 3 - 4 (08:30 - 10:00)">Jam 3 - 4 (08:30 - 10:00)</option>
+            <option value="Jam 5 - 6 (10:15 - 11:45)">Jam 5 - 6 (10:15 - 11:45)</option>
+            <option value="Jam 7 - 8 (12:30 - 14:00)">Jam 7 - 8 (12:30 - 14:00)</option>
+            <option value="Jam 9 - 10 (14:00 - 15:30)">Jam 9 - 10 (14:00 - 15:30)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pilih Guru Pengajar</label>
+          <select id="inputJadwalGuru" data-master="guru" required>
+            <option value="">-- Pilih Guru --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pilih Mata Pelajaran</label>
+          <select id="inputJadwalMapel" data-master="mapel" required>
+            <option value="">-- Pilih Mapel --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pilih Kelas</label>
+          <select id="inputJadwalKelas" data-master="kelas" required>
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+        <button type="submit" class="btn btn-primary">Simpan ke Matriks Jadwal</button>
+      </div>
+    </form>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main);">Matriks Matapel & Jam Mengajar</h3>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Filter Tampilan:</label>
+        <select id="filterJadwalKelas" data-master="kelas" onchange="renderJadwalTableUI()" style="padding: 6px 10px; font-size: 12px;">
+          <option value="">-- Semua Kelas --</option>
+        </select>
+        <select id="filterJadwalHari" onchange="renderJadwalTableUI()" style="padding: 6px 10px; font-size: 12px;">
+          <option value="">-- Semua Hari --</option>
+          <option value="Senin">Senin</option>
+          <option value="Selasa">Selasa</option>
+          <option value="Rabu">Rabu</option>
+          <option value="Kamis">Kamis</option>
+          <option value="Jumat">Jumat</option>
+          <option value="Sabtu">Sabtu</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-scroll-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px; text-align: center;">No</th>
+            <th>Hari</th>
+            <th>Jam Pelajaran</th>
+            <th>Kelas</th>
+            <th>Mata Pelajaran</th>
+            <th>Guru Pengajar</th>
+            <th style="text-align: center; width: 80px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableJadwalBody"></tbody>
+      </table>
+    </div>
+  `,
+
+  absensi: `
+    <div class="section-title">
+      <div class="section-title-left">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Presensi & Kehadiran Peserta Didik
+      </div>
+      <button type="button" class="btn btn-secondary" onclick="window.print()">
+        <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 0-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Cetak Rekap Presensi
+      </button>
+    </div>
+
+    <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 20px;">
+      <div class="form-grid" style="align-items: flex-end;">
+        <div class="form-group">
+          <label>Pilih Rombongan Belajar (Kelas)</label>
+          <select id="selectAbsensiKelas" data-master="kelas" onchange="renderAbsensiTableUI()">
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tanggal Presensi</label>
+          <input type="date" id="inputAbsensiTanggal" onchange="renderAbsensiTableUI()">
+        </div>
+        <div class="form-group">
+          <label>Mata Pelajaran (Opsional)</label>
+          <select id="selectAbsensiMapel" data-master="mapel">
+            <option value="">-- Semua Mata Pelajaran / Harian --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-metrics-grid" style="margin-bottom: 20px;">
+      <div class="metric-card" style="padding: 12px 16px;">
+        <div class="metric-info">
+          <h3 style="font-size: 11px;">Hadir (H)</h3>
+          <p class="metric-number" id="countHadir" style="font-size: 20px; color: #10B981;">0</p>
+        </div>
+      </div>
+      <div class="metric-card" style="padding: 12px 16px;">
+        <div class="metric-info">
+          <h3 style="font-size: 11px;">Sakit (S)</h3>
+          <p class="metric-number" id="countSakit" style="font-size: 20px; color: #F59E0B;">0</p>
+        </div>
+      </div>
+      <div class="metric-card" style="padding: 12px 16px;">
+        <div class="metric-info">
+          <h3 style="font-size: 11px;">Izin (I)</h3>
+          <p class="metric-number" id="countIzin" style="font-size: 20px; color: #3B82F6;">0</p>
+        </div>
+      </div>
+      <div class="metric-card" style="padding: 12px 16px;">
+        <div class="metric-info">
+          <h3 style="font-size: 11px;">Alpa (A)</h3>
+          <p class="metric-number" id="countAlpa" style="font-size: 20px; color: #EF4444;">0</p>
+        </div>
+      </div>
+    </div>
+
+    <form onsubmit="handleSaveAbsensi(event)">
+      <div class="table-scroll-container" style="margin-bottom: 20px;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">No</th>
+              <th>NISN / NIS</th>
+              <th>Nama Lengkap Siswa</th>
+              <th style="text-align: center; width: 60px;">L/P</th>
+              <th style="text-align: center; width: 320px;">Status Kehadiran</th>
+              <th>Catatan / Keterangan</th>
+            </tr>
+          </thead>
+          <tbody id="tableAbsensiBody"></tbody>
+        </table>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 700;">
+          ✓ Simpan Data Presensi
+        </button>
+      </div>
+    </form>
   `
 };
 
@@ -429,6 +665,8 @@ async function loadPage(pageName) {
   const activeBtn = document.querySelector(`.sidebar .nav-item[data-page="${pageName}"]`);
   if (activeBtn) activeBtn.classList.add('active');
 
+  localStorage.setItem('active_page', pageName);
+
   try {
     const response = await fetch(`pages/${pageName}.html`);
     if (!response.ok) throw new Error(`File pages/${pageName}.html tidak ditemukan.`);
@@ -438,10 +676,12 @@ async function loadPage(pageName) {
     if (!htmlContent.trim()) throw new Error("File HTML kosong.");
     if (pageName === 'siswa' && !htmlContent.includes('inputSiswaNamaGlobal')) throw new Error("Form siswa terpotong.");
     if (pageName === 'kartusiswa' && !htmlContent.includes('studentCardContainer')) throw new Error("Container kartu terpotong.");
-    
+    if (pageName === 'jadwal' && !htmlContent.includes('tableJadwalBody')) throw new Error("Container jadwal terpotong.");
+    if (pageName === 'absensi' && !htmlContent.includes('tableAbsensiBody')) throw new Error("Container presensi terpotong.");
+
     container.innerHTML = htmlContent;
   } catch (error) {
-    // FALLBACK KE TEMPLATE BAWAAN JS
+    // FALLBACK KE TEMPLATE BAWAAN JS JIKA FILE GAGAL DIBUAT/DIBACA
     if (builtInTemplates[pageName]) {
       container.innerHTML = builtInTemplates[pageName];
     } else {
@@ -449,12 +689,17 @@ async function loadPage(pageName) {
     }
   }
 
+  // JALANKAN FUNGSI RE-RENDER ELEMEN SECARA PRESISI
   if (typeof populateDynamicSelects === 'function') {
     populateDynamicSelects();
   }
 
-  if (pageName === 'dashboard' && typeof renderBirthdayWidget === 'function') {
-    renderBirthdayWidget();
+  if (pageName === 'dashboard') {
+    if (typeof renderDashboardUI === 'function') {
+      renderDashboardUI();
+    } else if (typeof renderBirthdayWidget === 'function') {
+      renderBirthdayWidget();
+    }
   }
 
   if (pageName === 'guru' && typeof renderGuruListUI === 'function') {
@@ -467,6 +712,14 @@ async function loadPage(pageName) {
 
   if (pageName === 'kartusiswa' && typeof renderStudentCardsUI === 'function') {
     renderStudentCardsUI();
+  }
+
+  if (pageName === 'jadwal' && typeof renderJadwalTableUI === 'function') {
+    renderJadwalTableUI();
+  }
+
+  if (pageName === 'absensi' && typeof renderAbsensiTableUI === 'function') {
+    renderAbsensiTableUI();
   }
 
   if (pageName === 'masterdata' && typeof renderMasterDataUI === 'function') {

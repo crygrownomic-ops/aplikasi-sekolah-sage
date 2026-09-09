@@ -1,4 +1,208 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA 8355, JADWAL, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA & SHEETJS EXCEL
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, JADWAL, PRESENSI, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA & SHEETJS EXCEL
+
+// ===================================================
+// 1. TOAST NOTIFICATION ENGINE (MELAYANG)
+// ===================================================
+function showToast(message, type = 'success') {
+  let toastContainer = document.getElementById('toastContainer');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toastContainer';
+    toastContainer.style.cssText = `
+      position: fixed; bottom: 24px; right: 24px; z-index: 99999;
+      display: flex; flex-direction: column; gap: 10px; max-width: 360px;
+    `;
+    document.body.appendChild(toastContainer);
+  }
+
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#3B82F6';
+  toast.style.cssText = `
+    background: ${bgColor}; color: #FFFFFF; padding: 12px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    animation: slideInRight 0.3s ease-out; opacity: 1; transition: all 0.3s ease;
+  `;
+  
+  toast.innerHTML = `<span>${message}</span><span style="cursor:pointer; font-size:16px;" onclick="this.parentElement.remove()">×</span>`;
+  toastContainer.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ===================================================
+// 2. PENGATURAN TAHUN AJARAN & SEMESTER (UPDATABLE)
+// ===================================================
+function getAcademicPeriod() {
+  const year = localStorage.getItem('academic_year') || '2026/2027';
+  const semester = localStorage.getItem('academic_semester') || 'Ganjil';
+  return { year, semester };
+}
+
+function saveAcademicPeriod(e) {
+  if (e) e.preventDefault();
+  const yearInput = document.getElementById('inputTahunAjaran').value.trim();
+  const semesterInput = document.getElementById('selectSemester').value;
+
+  if (yearInput) {
+    localStorage.setItem('academic_year', yearInput);
+    localStorage.setItem('academic_semester', semesterInput);
+    updateAcademicPeriodUI();
+    saveAutoBackupToFolder();
+    showToast(`Tahun Ajaran diperbarui: ${yearInput} (${semesterInput})`, 'success');
+  }
+}
+
+function updateAcademicPeriodUI() {
+  const { year, semester } = getAcademicPeriod();
+  
+  const displayEl = document.getElementById('displayAcademicPeriod');
+  if (displayEl) displayEl.innerText = `TA ${year} - ${semester}`;
+
+  const inputYear = document.getElementById('inputTahunAjaran');
+  const selectSem = document.getElementById('selectSemester');
+  if (inputYear) inputYear.value = year;
+  if (selectSem) selectSem.value = semester;
+}
+
+// ===================================================
+// 3. LIVE SEARCH BAR ENGINE (GURU & SISWA)
+// ===================================================
+function searchGuruTable(query) {
+  const filter = query.toLowerCase();
+  const rows = document.querySelectorAll('#tableGuruBody tr');
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(filter) ? '' : 'none';
+  });
+}
+
+function searchSiswaTable(query) {
+  const filter = query.toLowerCase();
+  const rows = document.querySelectorAll('#tableSiswaBody tr');
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(filter) ? '' : 'none';
+  });
+}
+
+// ===================================================
+// 4. EXPORT REKAP PRESENSI BULANAN TO EXCEL (.XLSX)
+// ===================================================
+function exportPresensiBulananExcel() {
+  if (typeof XLSX === 'undefined') {
+    alert('Library SheetJS belum siap!');
+    return;
+  }
+
+  const absensiList = getAbsensiData();
+  const siswaList = getSiswaData();
+  const selectKelas = document.getElementById('selectAbsensiKelas');
+  const selectedKelas = selectKelas ? selectKelas.value : '';
+
+  if (!selectedKelas) {
+    alert('Silakan pilih Rombongan Belajar (Kelas) terlebih dahulu!');
+    return;
+  }
+
+  const classSiswa = siswaList.filter(s => s.kelas === selectedKelas);
+  if (classSiswa.length === 0) {
+    alert(`Tidak ada siswa di kelas ${selectedKelas}`);
+    return;
+  }
+
+  const exportData = classSiswa.map((s, idx) => {
+    let hadir = 0, sakit = 0, izin = 0, alpa = 0;
+    
+    absensiList.filter(a => a.kelas === selectedKelas).forEach(rec => {
+      if (rec.details) {
+        const match = rec.details.find(d => d.siswaId === s.id);
+        if (match) {
+          if (match.status === 'H') hadir++;
+          if (match.status === 'S') sakit++;
+          if (match.status === 'I') izin++;
+          if (match.status === 'A') alpa++;
+        }
+      }
+    });
+
+    const totalHari = hadir + sakit + izin + alpa;
+    const persentase = totalHari > 0 ? Math.round((hadir / totalHari) * 100) + '%' : '0%';
+
+    return {
+      "No": idx + 1,
+      "NISN": s.nisn,
+      "NIS": s.nis,
+      "Nama Siswa": s.nama,
+      "Kelas": s.kelas,
+      "Hadir (H)": hadir,
+      "Sakit (S)": sakit,
+      "Izin (I)": izin,
+      "Alpa (A)": alpa,
+      "Persentase Kehadiran": persentase
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(exportData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `Rekap_${selectedKelas}`);
+  XLSX.writeFile(wb, `REKAP_PRESENSI_KELAS_${selectedKelas.replace(/\s+/g, '_')}.xlsx`);
+  
+  showToast(`Rekap presensi kelas ${selectedKelas} berhasil diunduh!`, 'success');
+}
+
+// ===================================================
+// 5. GRAFIK VISUAL KEHADIRAN (SVG CHART RENDERER)
+// ===================================================
+function renderAttendanceChartSVG() {
+  const chartBox = document.getElementById('dashAttendanceChart');
+  if (!chartBox) return;
+
+  const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const absensiList = getAbsensiData();
+
+  const chartData = days.map(day => {
+    let totalHadir = 0;
+    let totalSiswa = 0;
+
+    absensiList.forEach(rec => {
+      const recDay = new Date(rec.tanggal).toLocaleDateString('id-ID', { weekday: 'long' });
+      if (recDay.toLowerCase() === day.toLowerCase() && rec.details) {
+        rec.details.forEach(d => {
+          totalSiswa++;
+          if (d.status === 'H') totalHadir++;
+        });
+      }
+    });
+
+    const percent = totalSiswa > 0 ? Math.round((totalHadir / totalSiswa) * 100) : 0;
+    return { day, percent };
+  });
+
+  let svgBars = '';
+  chartData.forEach((d, i) => {
+    const barHeight = Math.max((d.percent / 100) * 120, 8);
+    const x = 35 + i * 50;
+    const y = 140 - barHeight;
+
+    svgBars += `
+      <rect x="${x}" y="${y}" width="28" height="${barHeight}" rx="4" fill="var(--primary)" opacity="0.85" />
+      <text x="${x + 14}" y="${y - 6}" font-size="10" font-weight="700" fill="var(--text-main)" text-anchor="middle">${d.percent}%</text>
+      <text x="${x + 14}" y="158" font-size="11" font-weight="600" fill="var(--text-muted)" text-anchor="middle">${d.day.substring(0, 3)}</text>
+    `;
+  });
+
+  chartBox.innerHTML = `
+    <svg viewBox="0 0 340 170" style="width: 100%; height: 170px; font-family: inherit;">
+      <line x1="20" y1="140" x2="330" y2="140" stroke="var(--border-color)" stroke-width="1"/>
+      ${svgBars}
+    </svg>
+  `;
+}
 
 // ===================================================
 // DYNAMIC THEME ENGINE (LIVE INTERACTIVE PREVIEW)
@@ -172,6 +376,7 @@ function getCompleteBackupDataObject() {
     app_title: "SIAKAD_BACKUP_DATABASE",
     version: "1.0",
     export_date: new Date().toLocaleString('id-ID'),
+    academic_period: getAcademicPeriod(),
     school_info: {
       name: localStorage.getItem('school_name') || '',
       email: localStorage.getItem('school_email') || '',
@@ -192,7 +397,8 @@ function getCompleteBackupDataObject() {
     },
     guru_list: getGuruData(),
     siswa_list: getSiswaData(),
-    jadwal_list: getJadwalData()
+    jadwal_list: getJadwalData(),
+    absensi_list: getAbsensiData()
   };
 }
 
@@ -230,7 +436,13 @@ function importDatabaseJSON(event) {
       if (data.guru_list) localStorage.setItem('siakad_guru_list', JSON.stringify(data.guru_list));
       if (data.siswa_list) localStorage.setItem('siakad_siswa_list', JSON.stringify(data.siswa_list));
       if (data.jadwal_list) localStorage.setItem('siakad_jadwal_list', JSON.stringify(data.jadwal_list));
+      if (data.absensi_list) localStorage.setItem('siakad_absensi_list', JSON.stringify(data.absensi_list));
       
+      if (data.academic_period) {
+        if (data.academic_period.year) localStorage.setItem('academic_year', data.academic_period.year);
+        if (data.academic_period.semester) localStorage.setItem('academic_semester', data.academic_period.semester);
+      }
+
       if (data.master_data) {
         if (data.master_data.kelas) localStorage.setItem('master_kelas', JSON.stringify(data.master_data.kelas));
         if (data.master_data.mapel) localStorage.setItem('master_mapel', JSON.stringify(data.master_data.mapel));
@@ -310,7 +522,7 @@ const DB = {
 
     try {
       const client = this.getClient();
-      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel', 'siakad_jadwal_list'];
+      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel', 'siakad_jadwal_list', 'siakad_absensi_list'];
 
       for (const key of keys) {
         const localData = localStorage.getItem(key);
@@ -707,6 +919,7 @@ function handleSaveGuru(e) {
   populateDynamicSelects();
   renderBirthdayWidget();
   saveAutoBackupToFolder();
+  showToast(`Data guru ${newGuruData.nama} berhasil disimpan!`, 'success');
 }
 
 function deleteGuruItem(id) {
@@ -719,6 +932,7 @@ function deleteGuruItem(id) {
     populateDynamicSelects();
     renderBirthdayWidget();
     saveAutoBackupToFolder();
+    showToast('Data guru berhasil dihapus!', 'success');
   }
 }
 
@@ -917,7 +1131,7 @@ function handleSaveSiswaGlobal(e) {
   renderClassCardsUI();
   renderStudentCardsUI();
   saveAutoBackupToFolder();
-  alert(`Siswa ${newSiswa.nama} berhasil didaftarkan ke kelas ${newSiswa.kelas}!`);
+  showToast(`Siswa ${newSiswa.nama} berhasil didaftarkan ke kelas ${newSiswa.kelas}!`, 'success');
 }
 
 function deleteSiswaItem(id, kelas) {
@@ -930,12 +1144,11 @@ function deleteSiswaItem(id, kelas) {
     renderClassCardsUI();
     renderStudentCardsUI();
     saveAutoBackupToFolder();
+    showToast('Data siswa berhasil dihapus!', 'success');
   }
 }
 
-// ===================================================
-// JADWAL & JAM AJAR MANAGEMENT (FITUR BARU FULL FUNCTIONAL)
-// ===================================================
+// JADWAL & JAM AJAR
 function getJadwalData() {
   const data = localStorage.getItem('siakad_jadwal_list');
   if (data) {
@@ -972,7 +1185,7 @@ function handleSaveJadwal(e) {
   localStorage.setItem('siakad_jadwal_list', JSON.stringify(list));
   renderJadwalTableUI();
   saveAutoBackupToFolder();
-  alert('Jadwal Pelajaran Berhasil Ditambahkan ke Matriks!');
+  showToast('Jadwal pelajaran berhasil ditambahkan!', 'success');
 }
 
 function deleteJadwalItem(id) {
@@ -982,6 +1195,7 @@ function deleteJadwalItem(id) {
     localStorage.setItem('siakad_jadwal_list', JSON.stringify(list));
     renderJadwalTableUI();
     saveAutoBackupToFolder();
+    showToast('Jadwal berhasil dihapus!', 'success');
   }
 }
 
@@ -1023,6 +1237,278 @@ function renderJadwalTableUI() {
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// PRESENSI & ABSENSI SISWA
+function getAbsensiData() {
+  const data = localStorage.getItem('siakad_absensi_list');
+  return data ? JSON.parse(data) : [];
+}
+
+function renderAbsensiTableUI() {
+  const tbody = document.getElementById('tableAbsensiBody');
+  const tglInput = document.getElementById('inputAbsensiTanggal');
+  const selectKelas = document.getElementById('selectAbsensiKelas');
+  if (!tbody || !selectKelas) return;
+
+  if (tglInput && !tglInput.value) {
+    const today = new Date().toISOString().split('T')[0];
+    tglInput.value = today;
+  }
+
+  const selectedKelas = selectKelas.value;
+  const selectedTanggal = tglInput ? tglInput.value : '';
+
+  if (!selectedKelas) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="padding: 24px; text-align: center; color: var(--text-muted); font-style: italic;">
+          Silakan pilih Rombongan Belajar (Kelas) di atas untuk menampilkan daftar presensi siswa.
+        </td>
+      </tr>
+    `;
+    updateAbsensiSummaryCounters();
+    return;
+  }
+
+  const siswas = getSiswaData().filter(s => s.kelas === selectedKelas);
+
+  if (siswas.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="padding: 24px; text-align: center; color: var(--text-muted); font-style: italic;">
+          Belum ada data siswa terdaftar pada kelas ${selectedKelas}.
+        </td>
+      </tr>
+    `;
+    updateAbsensiSummaryCounters();
+    return;
+  }
+
+  const absensiRecords = getAbsensiData();
+  const existingDayRecord = absensiRecords.find(a => a.kelas === selectedKelas && a.tanggal === selectedTanggal);
+
+  let html = '';
+  siswas.forEach((siswa, idx) => {
+    let studentStatus = 'H';
+    let studentNote = '';
+
+    if (existingDayRecord && existingDayRecord.details) {
+      const studentRecord = existingDayRecord.details.find(d => d.siswaId === siswa.id);
+      if (studentRecord) {
+        studentStatus = studentRecord.status || 'H';
+        studentNote = studentRecord.ket || '';
+      }
+    }
+
+    html += `
+      <tr>
+        <td style="text-align: center;">${idx + 1}</td>
+        <td><b>${siswa.nisn}</b><br><span style="font-size: 11px; color: var(--text-muted);">NIS: ${siswa.nis}</span></td>
+        <td style="font-weight: 600;">${siswa.nama}</td>
+        <td style="text-align: center;">${siswa.jk}</td>
+        <td style="text-align: center;">
+          <div style="display: inline-flex; gap: 8px;" class="absensi-radio-group">
+            <label style="cursor: pointer; font-size: 12px; font-weight: 700; color: #10B981;">
+              <input type="radio" name="status_siswa_${siswa.id}" value="H" ${studentStatus === 'H' ? 'checked' : ''} onchange="updateAbsensiSummaryCounters()"> H
+            </label>
+            <label style="cursor: pointer; font-size: 12px; font-weight: 700; color: #F59E0B;">
+              <input type="radio" name="status_siswa_${siswa.id}" value="S" ${studentStatus === 'S' ? 'checked' : ''} onchange="updateAbsensiSummaryCounters()"> S
+            </label>
+            <label style="cursor: pointer; font-size: 12px; font-weight: 700; color: #3B82F6;">
+              <input type="radio" name="status_siswa_${siswa.id}" value="I" ${studentStatus === 'I' ? 'checked' : ''} onchange="updateAbsensiSummaryCounters()"> I
+            </label>
+            <label style="cursor: pointer; font-size: 12px; font-weight: 700; color: #EF4444;">
+              <input type="radio" name="status_siswa_${siswa.id}" value="A" ${studentStatus === 'A' ? 'checked' : ''} onchange="updateAbsensiSummaryCounters()"> A
+            </label>
+          </div>
+        </td>
+        <td>
+          <input type="text" id="note_siswa_${siswa.id}" value="${studentNote}" placeholder="Keterangan (misal: Demam)" style="padding: 4px 8px; font-size: 12px; width: 100%;">
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+  updateAbsensiSummaryCounters();
+}
+
+function updateAbsensiSummaryCounters() {
+  let h = 0, s = 0, i = 0, a = 0;
+  const radioInputs = document.querySelectorAll('#tableAbsensiBody input[type="radio"]:checked');
+
+  radioInputs.forEach(radio => {
+    if (radio.value === 'H') h++;
+    else if (radio.value === 'S') s++;
+    else if (radio.value === 'I') i++;
+    else if (radio.value === 'A') a++;
+  });
+
+  const elH = document.getElementById('countHadir');
+  const elS = document.getElementById('countSakit');
+  const elI = document.getElementById('countIzin');
+  const elA = document.getElementById('countAlpa');
+
+  if (elH) elH.innerText = h;
+  if (elS) elS.innerText = s;
+  if (elI) elI.innerText = i;
+  if (elA) elA.innerText = a;
+}
+
+function handleSaveAbsensi(e) {
+  e.preventDefault();
+
+  const selectedKelas = document.getElementById('selectAbsensiKelas').value;
+  const selectedTanggal = document.getElementById('inputAbsensiTanggal').value;
+  const selectedMapel = document.getElementById('selectAbsensiMapel').value;
+
+  if (!selectedKelas || !selectedTanggal) {
+    alert('Silakan pilih Kelas dan Tanggal presensi terlebih dahulu!');
+    return;
+  }
+
+  const siswas = getSiswaData().filter(s => s.kelas === selectedKelas);
+  if (siswas.length === 0) {
+    alert('Tidak ada siswa pada kelas ini untuk disimpan presensinya!');
+    return;
+  }
+
+  const details = siswas.map(siswa => {
+    const selectedRadio = document.querySelector(`input[name="status_siswa_${siswa.id}"]:checked`);
+    const noteInput = document.getElementById(`note_siswa_${siswa.id}`);
+    return {
+      siswaId: siswa.id,
+      nama: siswa.nama,
+      status: selectedRadio ? selectedRadio.value : 'H',
+      ket: noteInput ? noteInput.value.trim() : ''
+    };
+  });
+
+  let absensiList = getAbsensiData();
+  const existingIdx = absensiList.findIndex(a => a.kelas === selectedKelas && a.tanggal === selectedTanggal);
+
+  const newRecord = {
+    id: existingIdx >= 0 ? absensiList[existingIdx].id : Date.now(),
+    kelas: selectedKelas,
+    tanggal: selectedTanggal,
+    mapel: selectedMapel,
+    details: details,
+    updatedAt: new Date().toISOString()
+  };
+
+  if (existingIdx >= 0) {
+    absensiList[existingIdx] = newRecord;
+  } else {
+    absensiList.push(newRecord);
+  }
+
+  localStorage.setItem('siakad_absensi_list', JSON.stringify(absensiList));
+  saveAutoBackupToFolder();
+  showToast(`Presensi Kelas ${selectedKelas} Tanggal ${selectedTanggal} Berhasil Disimpan!`, 'success');
+}
+
+// ===================================================
+// DASHBOARD STATS & DYNAMIC RENDERER
+// ===================================================
+function renderDashboardUI() {
+  // 1. Render Tanggal Realtime Hari Ini & Periode Akademik
+  const dateEl = document.getElementById('dashTodayDate');
+  const today = new Date();
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+  const dayName = days[today.getDay()];
+  const dateStr = `${dayName}, ${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+  if (dateEl) dateEl.innerText = dateStr;
+
+  updateAcademicPeriodUI();
+
+  // 2. Render KPI Metrics Realtime
+  const siswaList = getSiswaData();
+  const guruList = getGuruData();
+  const kelasList = getMasterData('kelas');
+  const absensiList = getAbsensiData();
+
+  const elSiswa = document.getElementById('dashCountSiswa');
+  const elGuru = document.getElementById('dashCountGuru');
+  const elKelas = document.getElementById('dashCountKelas');
+
+  if (elSiswa) elSiswa.innerText = siswaList.length.toLocaleString('id-ID');
+  if (elGuru) elGuru.innerText = guruList.length.toLocaleString('id-ID');
+  if (elKelas) elKelas.innerText = kelasList.length.toLocaleString('id-ID');
+
+  // Calculate Presensi Hari Ini
+  const todayISO = today.toISOString().split('T')[0];
+  const todayAbsensi = absensiList.filter(a => a.tanggal === todayISO);
+
+  const elPercent = document.getElementById('dashPresensiPercent');
+  const elSub = document.getElementById('dashPresensiSub');
+
+  if (todayAbsensi.length > 0) {
+    let totalHadir = 0;
+    let totalMurid = 0;
+
+    todayAbsensi.forEach(rec => {
+      if (rec.details) {
+        rec.details.forEach(d => {
+          totalMurid++;
+          if (d.status === 'H') totalHadir++;
+        });
+      }
+    });
+
+    const percent = totalMurid > 0 ? Math.round((totalHadir / totalMurid) * 100) : 0;
+    if (elPercent) elPercent.innerText = `${percent}%`;
+    if (elSub) elSub.innerText = `${totalHadir} dari ${totalMurid} murid hadir hari ini`;
+  } else {
+    if (elPercent) elPercent.innerText = '0%';
+    if (elSub) elSub.innerText = 'Belum ada input presensi hari ini';
+  }
+
+  // 3. Render Jadwal Pelajaran Hari Ini
+  renderTodayJadwal(dayName);
+
+  // 4. Render Notifikasi Ulang Tahun Guru & Grafik Kehadiran
+  renderBirthdayWidget();
+  renderAttendanceChartSVG();
+}
+
+function renderTodayJadwal(dayName) {
+  const tbody = document.getElementById('dashTableJadwalHariIni');
+  const elDayName = document.getElementById('dashTodayName');
+
+  if (elDayName) elDayName.innerText = dayName;
+  if (!tbody) return;
+
+  const jadwalList = getJadwalData();
+  const todayJadwal = jadwalList.filter(j => j.hari.toLowerCase() === dayName.toLowerCase());
+
+  if (todayJadwal.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic;">
+          Tidak ada jadwal mata pelajaran untuk hari ${dayName}.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let html = '';
+  todayJadwal.forEach((jadwal, idx) => {
+    html += `
+      <tr>
+        <td style="text-align: center;">${idx + 1}</td>
+        <td><span style="background: var(--accent-soft); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 11px;">${jadwal.jam}</span></td>
+        <td><b>${jadwal.kelas}</b></td>
+        <td>${jadwal.mapel}</td>
+        <td>${jadwal.guru || '-'}</td>
       </tr>
     `;
   });
@@ -1100,6 +1586,7 @@ function uploadSiswaPhoto(event, siswaId) {
     localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
     renderStudentCardsUI();
     saveAutoBackupToFolder();
+    showToast('Foto siswa berhasil diunggah!', 'success');
   };
   reader.readAsDataURL(file);
 }
@@ -1156,40 +1643,51 @@ function renderBirthdayWidget() {
   if (!container) return;
 
   const gurus = getGuruData();
-  const currentMonth = new Date().getMonth() + 1;
+  const today = new Date();
+  const currentMonth = today.getMonth() + 1;
+  const currentDay = today.getDate();
   const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
+  // Filter guru yang berulang tahun bulan ini
   const birthdayGurus = gurus.filter(g => {
     if (!g.tglLahir) return false;
-    const m = parseInt(g.tglLahir.split('-')[1], 10);
+    const parts = g.tglLahir.split('-');
+    const m = parseInt(parts[1], 10);
     return m === currentMonth;
   });
 
   if (birthdayGurus.length === 0) {
-    container.innerHTML = `
-      <div class="birthday-banner">
-        <div class="birthday-badge-icon">🎂</div>
-        <div class="birthday-info">
-          <h4>Ulang Tahun Guru Bulan Ini (${monthNames[currentMonth]})</h4>
-          <p>Tidak ada guru yang berulang tahun pada bulan ini.</p>
-        </div>
-      </div>
-    `;
+    container.innerHTML = '';
     return;
   }
 
-  let guruNames = birthdayGurus.map(g => {
-    const day = parseInt(g.tglLahir.split('-')[2], 10);
-    return `<b>${g.nama}</b> (${day} ${monthNames[currentMonth]})`;
-  }).join(', ');
+  // Cek jika ada guru yang tepat berulang tahun HARI INI
+  const todayGurus = birthdayGurus.filter(g => {
+    const d = parseInt(g.tglLahir.split('-')[2], 10);
+    return d === currentDay;
+  });
+
+  let guruListText = '';
+
+  if (todayGurus.length > 0) {
+    const names = todayGurus.map(g => `<b>${g.nama}</b>`).join(', ');
+    guruListText = `🎂 <strong>HARI INI BERULANG TAHUN! 🎉</strong> Selamat Ulang Tahun kepada ${names}! Semoga sehat dan sukses selalu.`;
+  } else {
+    const names = birthdayGurus.map(g => {
+      const d = parseInt(g.tglLahir.split('-')[2], 10);
+      return `<b>${g.nama}</b> (${d} ${monthNames[currentMonth]})`;
+    }).join(', ');
+    guruListText = `🎂 <strong>Ulang Tahun Guru Bulan ${monthNames[currentMonth]}:</strong> ${names}`;
+  }
 
   container.innerHTML = `
-    <div class="birthday-banner">
-      <div class="birthday-badge-icon">🎂</div>
-      <div class="birthday-info">
-        <h4>Selamat Ulang Tahun Bulan ${monthNames[currentMonth]}! 🎉</h4>
-        <p>Mari ucapkan selamat kepada: ${guruNames}</p>
+    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: #FFFFFF; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+      <div style="font-size: 13px; line-height: 1.5;">
+        ${guruListText}
       </div>
+      <button type="button" onclick="loadPage('guru')" style="background: rgba(255,255,255,0.2); border: none; color: #FFF; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; margin-left: 12px;">
+        Lihat Data Guru →
+      </button>
     </div>
   `;
 }
@@ -1207,7 +1705,7 @@ function saveSchoolProfile(e) {
 
   updateHeaderUI();
   saveAutoBackupToFolder();
-  alert('Profil Sekolah Berhasil Disimpan!');
+  showToast('Profil Sekolah Berhasil Disimpan!', 'success');
 }
 
 function handleLogoUpload(event) {
@@ -1218,6 +1716,7 @@ function handleLogoUpload(event) {
       localStorage.setItem('school_logo', e.target.result);
       updateHeaderUI();
       saveAutoBackupToFolder();
+      showToast('Logo sekolah berhasil diperbarui!', 'success');
     };
     reader.readAsDataURL(file);
   }
@@ -1272,6 +1771,7 @@ function loadSchoolSettings() {
   }
 
   updateHeaderUI();
+  updateAcademicPeriodUI();
   checkStoragePersistence();
 }
 
