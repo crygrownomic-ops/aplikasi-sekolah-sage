@@ -1,13 +1,18 @@
 <div class="section-title">
-  <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-  Manajemen Jadwal Mengajar & Alokasi Kelas
+  <div class="section-title-left">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Manajemen Jadwal Mengajar & Alokasi Kelas
+  </div>
 </div>
 
-<form onsubmit="event.preventDefault();">
+<!-- FORM TAMBAH JADWAL LES / JAM AJAR -->
+<form onsubmit="handleSaveJadwal(event)" style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 24px;">
+  <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">+ Tambah Alokasi Jadwal Baru</h3>
+  
   <div class="form-grid">
     <div class="form-group">
       <label>Pilih Hari</label>
-      <select required>
+      <select id="inputJadwalHari" required>
         <option value="Senin">Senin</option>
         <option value="Selasa">Selasa</option>
         <option value="Rabu">Rabu</option>
@@ -16,36 +21,81 @@
         <option value="Sabtu">Sabtu</option>
       </select>
     </div>
+
     <div class="form-group">
       <label>Jam Pelajaran Ke-</label>
-      <select required>
-        <option value="1-2">Jam 1 - 2 (07:00 - 08:30)</option>
-        <option value="3-4">Jam 3 - 4 (08:30 - 10:00)</option>
-        <option value="5-6">Jam 5 - 6 (10:15 - 11:45)</option>
-        <option value="7-8">Jam 7 - 8 (12:30 - 14:00)</option>
+      <select id="inputJadwalJam" required>
+        <option value="Jam 1 - 2 (07:00 - 08:30)">Jam 1 - 2 (07:00 - 08:30)</option>
+        <option value="Jam 3 - 4 (08:30 - 10:00)">Jam 3 - 4 (08:30 - 10:00)</option>
+        <option value="Jam 5 - 6 (10:15 - 11:45)">Jam 5 - 6 (10:15 - 11:45)</option>
+        <option value="Jam 7 - 8 (12:30 - 14:00)">Jam 7 - 8 (12:30 - 14:00)</option>
+        <option value="Jam 9 - 10 (14:00 - 15:30)">Jam 9 - 10 (14:00 - 15:30)</option>
       </select>
     </div>
+
     <div class="form-group">
       <label>Pilih Guru Pengajar</label>
-      <select data-master="guru" required>
+      <select id="inputJadwalGuru" data-master="guru" required>
         <option value="">-- Pilih Guru --</option>
       </select>
     </div>
+
     <div class="form-group">
       <label>Pilih Mata Pelajaran</label>
-      <select data-master="mapel" required>
+      <select id="inputJadwalMapel" data-master="mapel" required>
         <option value="">-- Pilih Mapel --</option>
       </select>
     </div>
+
     <div class="form-group">
       <label>Pilih Kelas</label>
-      <select data-master="kelas" required>
+      <select id="inputJadwalKelas" data-master="kelas" required>
         <option value="">-- Pilih Kelas --</option>
       </select>
     </div>
   </div>
 
-  <div class="form-actions">
-    <button type="submit" class="btn btn-primary">Tambah ke Matriks Jadwal</button>
+  <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+    <button type="submit" class="btn btn-primary">Simpan ke Matriks Jadwal</button>
   </div>
 </form>
+
+<!-- PANEL FILTER & TAMPILAN MATRIKS TABEL -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+  <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main);">Matriks Matapel & Jam Mengajar</h3>
+  
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">Filter Tampilan:</label>
+    <select id="filterJadwalKelas" data-master="kelas" onchange="renderJadwalTableUI()" style="padding: 6px 10px; font-size: 12px;">
+      <option value="">-- Semua Kelas --</option>
+    </select>
+    <select id="filterJadwalHari" onchange="renderJadwalTableUI()" style="padding: 6px 10px; font-size: 12px;">
+      <option value="">-- Semua Hari --</option>
+      <option value="Senin">Senin</option>
+      <option value="Selasa">Selasa</option>
+      <option value="Rabu">Rabu</option>
+      <option value="Kamis">Kamis</option>
+      <option value="Jumat">Jumat</option>
+      <option value="Sabtu">Sabtu</option>
+    </select>
+  </div>
+</div>
+
+<div class="table-scroll-container">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 40px; text-align: center;">No</th>
+        <th>Hari</th>
+        <th>Jam Pelajaran</th>
+        <th>Kelas</th>
+        <th>Mata Pelajaran</th>
+        <th>Guru Pengajar</th>
+        <th style="text-align: center; width: 80px;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tableJadwalBody">
+      <!-- Rendered via JS -->
+    </tbody>
+  </table>
+</div>

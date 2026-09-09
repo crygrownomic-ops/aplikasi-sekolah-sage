@@ -1,4 +1,4 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA & SHEETJS EXCEL
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, JADWAL, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA & SHEETJS EXCEL
 
 // ===================================================
 // DYNAMIC THEME ENGINE (LIVE INTERACTIVE PREVIEW)
@@ -191,7 +191,8 @@ function getCompleteBackupDataObject() {
       jurusan: getMasterData('jurusan')
     },
     guru_list: getGuruData(),
-    siswa_list: getSiswaData()
+    siswa_list: getSiswaData(),
+    jadwal_list: getJadwalData()
   };
 }
 
@@ -228,6 +229,7 @@ function importDatabaseJSON(event) {
 
       if (data.guru_list) localStorage.setItem('siakad_guru_list', JSON.stringify(data.guru_list));
       if (data.siswa_list) localStorage.setItem('siakad_siswa_list', JSON.stringify(data.siswa_list));
+      if (data.jadwal_list) localStorage.setItem('siakad_jadwal_list', JSON.stringify(data.jadwal_list));
       
       if (data.master_data) {
         if (data.master_data.kelas) localStorage.setItem('master_kelas', JSON.stringify(data.master_data.kelas));
@@ -308,7 +310,7 @@ const DB = {
 
     try {
       const client = this.getClient();
-      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel'];
+      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel', 'siakad_jadwal_list'];
 
       for (const key of keys) {
         const localData = localStorage.getItem(key);
@@ -344,7 +346,6 @@ function saveSupabaseConfig() {
 // EXCEL IMPORT & EXPORT ENGINE (SHEETJS .XLSX)
 // ===================================================
 
-// 1. GURU EXCEL
 function downloadGuruExcelTemplate() {
   if (typeof XLSX === 'undefined') {
     alert('Library SheetJS belum siap! Periksa koneksi internet atau script pada index.html.');
@@ -432,7 +433,6 @@ function importGuruExcel(event) {
   reader.readAsArrayBuffer(file);
 }
 
-// 2. SISWA EXCEL (FORM 8355)
 function downloadSiswaExcelTemplate() {
   if (typeof XLSX === 'undefined') {
     alert('Library SheetJS belum siap!');
@@ -933,6 +933,103 @@ function deleteSiswaItem(id, kelas) {
   }
 }
 
+// ===================================================
+// JADWAL & JAM AJAR MANAGEMENT (FITUR BARU FULL FUNCTIONAL)
+// ===================================================
+function getJadwalData() {
+  const data = localStorage.getItem('siakad_jadwal_list');
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (parsed && parsed.length > 0) return parsed;
+  }
+
+  const defaultJadwal = [
+    { id: 1, hari: 'Senin', jam: 'Jam 1 - 2 (07:00 - 08:30)', guru: 'Dr. Ahmad Fauzi, M.Pd.', mapel: 'Matematika Wajib', kelas: 'X - A' },
+    { id: 2, hari: 'Senin', jam: 'Jam 3 - 4 (08:30 - 10:00)', guru: 'Dr. Ahmad Fauzi, M.Pd.', mapel: 'Matematika Wajib', kelas: 'XI - IPA 1' }
+  ];
+  localStorage.setItem('siakad_jadwal_list', JSON.stringify(defaultJadwal));
+  return defaultJadwal;
+}
+
+function handleSaveJadwal(e) {
+  e.preventDefault();
+
+  const guruSelect = document.getElementById('inputJadwalGuru');
+  const guruNama = guruSelect.options[guruSelect.selectedIndex] ? guruSelect.options[guruSelect.selectedIndex].text.split(' (')[0] : '';
+
+  const newJadwal = {
+    id: Date.now(),
+    hari: document.getElementById('inputJadwalHari').value,
+    jam: document.getElementById('inputJadwalJam').value,
+    guru: guruNama,
+    mapel: document.getElementById('inputJadwalMapel').value,
+    kelas: document.getElementById('inputJadwalKelas').value
+  };
+
+  let list = getJadwalData();
+  list.push(newJadwal);
+
+  localStorage.setItem('siakad_jadwal_list', JSON.stringify(list));
+  renderJadwalTableUI();
+  saveAutoBackupToFolder();
+  alert('Jadwal Pelajaran Berhasil Ditambahkan ke Matriks!');
+}
+
+function deleteJadwalItem(id) {
+  let list = getJadwalData();
+  if (confirm('Hapus alokasi jadwal pelajaran ini?')) {
+    list = list.filter(j => j.id !== id);
+    localStorage.setItem('siakad_jadwal_list', JSON.stringify(list));
+    renderJadwalTableUI();
+    saveAutoBackupToFolder();
+  }
+}
+
+function renderJadwalTableUI() {
+  const tbody = document.getElementById('tableJadwalBody');
+  if (!tbody) return;
+
+  const list = getJadwalData();
+  const filterKelas = document.getElementById('filterJadwalKelas') ? document.getElementById('filterJadwalKelas').value : '';
+  const filterHari = document.getElementById('filterJadwalHari') ? document.getElementById('filterJadwalHari').value : '';
+
+  let filtered = list;
+  if (filterKelas) filtered = filtered.filter(j => j.kelas === filterKelas);
+  if (filterHari) filtered = filtered.filter(j => j.hari === filterHari);
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic;">
+          Belum ada jadwal pelajaran yang teralokasikan. Gunakan form di atas untuk menambahkan.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach((jadwal, idx) => {
+    html += `
+      <tr>
+        <td style="text-align: center;">${idx + 1}</td>
+        <td><span style="background: var(--accent-soft); padding: 2px 8px; border-radius: 4px; font-weight: 700;">${jadwal.hari}</span></td>
+        <td>${jadwal.jam}</td>
+        <td><b>${jadwal.kelas}</b></td>
+        <td>${jadwal.mapel}</td>
+        <td>${jadwal.guru || '-'}</td>
+        <td style="text-align: center;">
+          <button type="button" class="btn-icon-action del" onclick="deleteJadwalItem(${jadwal.id})" title="Hapus Jadwal">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
 // RENDER KARTU SISWA GENERATOR
 function renderStudentCardsUI() {
   const container = document.getElementById('studentCardContainer');
@@ -1021,7 +1118,7 @@ function populateDynamicSelects() {
   const kelass = getMasterData('kelas');
   kelasSelects.forEach(select => {
     const currentVal = select.value;
-    select.innerHTML = '<option value="">-- Semua Kelas --</option>' +
+    select.innerHTML = '<option value="">-- Pilih Kelas --</option>' +
       kelass.map(k => `<option value="${k}">${k}</option>`).join('');
     if (currentVal && kelass.includes(currentVal)) select.value = currentVal;
   });
