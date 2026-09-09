@@ -1,0 +1,60 @@
+<div class="section-title">
+  <div class="section-title-left">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    Agenda & Jurnal Mengajar Harian Guru
+  </div>
+</div>
+
+<form onsubmit="handleSaveJurnal(event)" style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 24px;">
+  <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">+ Catat Agenda Mengajar Hari Ini</h3>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Tanggal Mengajar</label>
+      <input type="date" id="inputJurnalTanggal" required>
+    </div>
+    <div class="form-group">
+      <label>Guru Pengajar</label>
+      <select id="selectJurnalGuru" data-master="guru" required>
+        <option value="">-- Pilih Guru --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Kelas</label>
+      <select id="selectJurnalKelas" data-master="kelas" required>
+        <option value="">-- Pilih Kelas --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Mata Pelajaran</label>
+      <select id="selectJurnalMapel" data-master="mapel" required>
+        <option value="">-- Pilih Mapel --</option>
+      </select>
+    </div>
+    <div class="form-group full-width">
+      <label>Materi / Pokok Bahasan Yang Disampaikan</label>
+      <input type="text" id="inputJurnalMateri" placeholder="Contoh: Bab 3 - Persamaan Kuadrat dan Pembahasan Soal" required>
+    </div>
+  </div>
+  <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+    <button type="submit" class="btn btn-primary">Simpan Agenda Jurnal</button>
+  </div>
+</form>
+
+<div class="table-scroll-container">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 40px; text-align: center;">No</th>
+        <th>Tanggal</th>
+        <th>Guru Pengajar</th>
+        <th>Kelas</th>
+        <th>Mata Pelajaran</th>
+        <th>Materi Disampaikan</th>
+        <th style="text-align: center; width: 80px;">Aksi</th>
+      </tr>
+    </thead>
+    <tbody id="tableJurnalBody">
+      <!-- Rendered via JS -->
+    </tbody>
+  </table>
+</div>

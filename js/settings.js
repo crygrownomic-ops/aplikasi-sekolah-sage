@@ -1,7 +1,7 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA 8355, JADWAL, PRESENSI, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA & SHEETJS EXCEL
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, JADWAL, PRESENSI, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA, SHEETJS EXCEL, & FITUR ENTERPRISE
 
 // ===================================================
-// 1. TOAST NOTIFICATION ENGINE (MELAYANG)
+// 1. TOAST NOTIFICATION ENGINE
 // ===================================================
 function showToast(message, type = 'success') {
   let toastContainer = document.getElementById('toastContainer');
@@ -70,7 +70,7 @@ function updateAcademicPeriodUI() {
 }
 
 // ===================================================
-// 3. LIVE SEARCH BAR ENGINE (GURU & SISWA)
+// 3. LIVE SEARCH BAR ENGINE
 // ===================================================
 function searchGuruTable(query) {
   const filter = query.toLowerCase();
@@ -205,7 +205,260 @@ function renderAttendanceChartSVG() {
 }
 
 // ===================================================
-// DYNAMIC THEME ENGINE (LIVE INTERACTIVE PREVIEW)
+// 6. FITUR BARU 1: QR CODE / BARCODE GENERATOR KARTU SISWA
+// ===================================================
+function generateBarcodeSVG(codeText) {
+  if (!codeText) codeText = "00000000";
+  let bars = '';
+  for (let i = 0; i < codeText.length; i++) {
+    const charCode = codeText.charCodeAt(i);
+    const width = (charCode % 3) + 1;
+    const x = 10 + i * 8;
+    bars += `<rect x="${x}" y="5" width="${width}" height="28" fill="#1E293B"/>`;
+  }
+  return `
+    <svg viewBox="0 0 120 40" style="width: 100px; height: 32px; background: #FFF; padding: 2px; border-radius: 4px; border: 1px solid var(--border-color);">
+      ${bars}
+      <text x="60" y="38" font-size="7" font-weight="700" fill="#1E293B" text-anchor="middle">${codeText}</text>
+    </svg>
+  `;
+}
+
+// ===================================================
+// 7. FITUR BARU 2: MODUL PENILAIAN & RAPOR SISWA
+// ===================================================
+function getNilaiData() {
+  const data = localStorage.getItem('siakad_nilai_list');
+  return data ? JSON.parse(data) : [];
+}
+
+function handleSaveNilai(e) {
+  e.preventDefault();
+  const kelas = document.getElementById('selectNilaiKelas').value;
+  const mapel = document.getElementById('selectNilaiMapel').value;
+
+  if (!kelas || !mapel) {
+    alert('Pilih Kelas dan Mata Pelajaran terlebih dahulu!');
+    return;
+  }
+
+  const siswas = getSiswaData().filter(s => s.kelas === kelas);
+  let nilaiList = getNilaiData();
+
+  siswas.forEach(s => {
+    const tugas = Number(document.getElementById(`nilai_tugas_${s.id}`).value) || 0;
+    const uts = Number(document.getElementById(`nilai_uts_${s.id}`).value) || 0;
+    const uas = Number(document.getElementById(`nilai_uas_${s.id}`).value) || 0;
+    const akhir = Math.round((tugas * 0.3) + (uts * 0.3) + (uas * 0.4));
+    
+    let predikat = 'D';
+    if (akhir >= 88) predikat = 'A';
+    else if (akhir >= 78) predikat = 'B';
+    else if (akhir >= 68) predikat = 'C';
+
+    const existingIdx = nilaiList.findIndex(n => n.siswaId === s.id && n.mapel === mapel);
+    const item = { siswaId: s.id, nama: s.nama, kelas, mapel, tugas, uts, uas, akhir, predikat };
+
+    if (existingIdx >= 0) nilaiList[existingIdx] = item;
+    else nilaiList.push(item);
+  });
+
+  localStorage.setItem('siakad_nilai_list', JSON.stringify(nilaiList));
+  saveAutoBackupToFolder();
+  showToast('Data Nilai & Capaian Rapor Berhasil Disimpan!', 'success');
+}
+
+function renderNilaiTableUI() {
+  const tbody = document.getElementById('tableNilaiBody');
+  const selectKelas = document.getElementById('selectNilaiKelas');
+  const selectMapel = document.getElementById('selectNilaiMapel');
+  if (!tbody || !selectKelas || !selectMapel) return;
+
+  const kelas = selectKelas.value;
+  const mapel = selectMapel.value;
+
+  if (!kelas || !mapel) {
+    tbody.innerHTML = `<tr><td colspan="8" style="padding: 20px; text-align: center; color: var(--text-muted);">Pilih Kelas dan Mata Pelajaran untuk memasukkan nilai.</td></tr>`;
+    return;
+  }
+
+  const siswas = getSiswaData().filter(s => s.kelas === kelas);
+  const nilaiList = getNilaiData();
+
+  let html = '';
+  siswas.forEach((s, idx) => {
+    const record = nilaiList.find(n => n.siswaId === s.id && n.mapel === mapel) || {};
+    const tugas = record.tugas || 0;
+    const uts = record.uts || 0;
+    const uas = record.uas || 0;
+    const akhir = record.akhir || 0;
+    const predikat = record.predikat || '-';
+
+    html += `
+      <tr>
+        <td style="text-align: center;">${idx + 1}</td>
+        <td><b>${s.nisn}</b></td>
+        <td style="font-weight: 600;">${s.nama}</td>
+        <td><input type="number" id="nilai_tugas_${s.id}" value="${tugas}" style="width: 70px; padding: 4px;" min="0" max="100"></td>
+        <td><input type="number" id="nilai_uts_${s.id}" value="${uts}" style="width: 70px; padding: 4px;" min="0" max="100"></td>
+        <td><input type="number" id="nilai_uas_${s.id}" value="${uas}" style="width: 70px; padding: 4px;" min="0" max="100"></td>
+        <td style="font-weight: 700; text-align: center;">${akhir}</td>
+        <td style="text-align: center;"><span style="background: var(--accent-soft); padding: 2px 8px; border-radius: 4px; font-weight: 700;">${predikat}</span></td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// ===================================================
+// 8. FITUR BARU 3: EXPORT LAPORAN FORM 8355 STANDAR RESMI
+// ===================================================
+function exportForm8355Excel() {
+  if (typeof XLSX === 'undefined') {
+    alert('Library SheetJS belum siap!');
+    return;
+  }
+
+  const siswas = getSiswaData();
+  if (siswas.length === 0) {
+    alert('Belum ada data siswa untuk diexport!');
+    return;
+  }
+
+  const exportData = siswas.map((s, idx) => ({
+    "NO": idx + 1,
+    "NAMA PESERTA DIDIK": s.nama,
+    "NISN": s.nisn,
+    "NIS": s.nis,
+    "JK": s.jk,
+    "TEMPAT LAHIR": s.tempatLahir,
+    "TANGGAL LAHIR": s.tglLahir,
+    "NIK": s.nik,
+    "AGAMA": s.agama,
+    "ALAMAT": s.alamat,
+    "NAMA AYAH": s.ayah,
+    "NAMA IBU": s.ibu,
+    "PEKERJAAN ORTU": s.pekerjaanOrtu,
+    "KELAS": s.kelas,
+    "JURUSAN": s.jurusan
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(exportData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "FORM 8355");
+  XLSX.writeFile(wb, `LAPORAN_FORM_8355_BUKU_INDUK.xlsx`);
+  showToast('Laporan Form 8355 resmi berhasil diexport!', 'success');
+}
+
+// ===================================================
+// 9. FITUR BARU 4: JURNAL & AGENDA MENGAJAR HARIAN GURU
+// ===================================================
+function getJurnalData() {
+  const data = localStorage.getItem('siakad_jurnal_list');
+  return data ? JSON.parse(data) : [];
+}
+
+function handleSaveJurnal(e) {
+  e.preventDefault();
+  const tanggal = document.getElementById('inputJurnalTanggal').value;
+  const guru = document.getElementById('selectJurnalGuru').value;
+  const kelas = document.getElementById('selectJurnalKelas').value;
+  const mapel = document.getElementById('selectJurnalMapel').value;
+  const materi = document.getElementById('inputJurnalMateri').value.trim();
+
+  if (!tanggal || !guru || !kelas || !mapel || !materi) {
+    alert('Lengkapi seluruh form agenda harian!');
+    return;
+  }
+
+  const newJurnal = { id: Date.now(), tanggal, guru, kelas, mapel, materi };
+  let list = getJurnalData();
+  list.unshift(newJurnal);
+
+  localStorage.setItem('siakad_jurnal_list', JSON.stringify(list));
+  renderJurnalTableUI();
+  saveAutoBackupToFolder();
+  showToast('Agenda mengajar harian berhasil dicatat!', 'success');
+}
+
+function deleteJurnalItem(id) {
+  let list = getJurnalData();
+  if (confirm('Hapus catatan agenda mengajar ini?')) {
+    list = list.filter(j => j.id !== id);
+    localStorage.setItem('siakad_jurnal_list', JSON.stringify(list));
+    renderJurnalTableUI();
+    saveAutoBackupToFolder();
+    showToast('Catatan jurnal berhasil dihapus!', 'success');
+  }
+}
+
+function renderJurnalTableUI() {
+  const tbody = document.getElementById('tableJurnalBody');
+  if (!tbody) return;
+
+  const list = getJurnalData();
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding: 20px; text-align: center; color: var(--text-muted);">Belum ada catatan agenda harian mengajar.</td></tr>`;
+    return;
+  }
+
+  let html = '';
+  list.forEach((j, idx) => {
+    html += `
+      <tr>
+        <td style="text-align: center;">${idx + 1}</td>
+        <td>${j.tanggal}</td>
+        <td style="font-weight: 600;">${j.guru}</td>
+        <td><b>${j.kelas}</b></td>
+        <td>${j.mapel}</td>
+        <td>${j.materi}</td>
+        <td style="text-align: center;">
+          <button type="button" class="btn-icon-action del" onclick="deleteJurnalItem(${j.id})">
+            <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// ===================================================
+// 10. FITUR BARU 5: DEMOGRAFI & ROMBEL (AKREDITASI)
+// ===================================================
+function renderDemografiUI() {
+  const box = document.getElementById('demografiContainer');
+  if (!box) return;
+
+  const siswas = getSiswaData();
+  const totalSiswa = siswas.length;
+  const laki = siswas.filter(s => s.jk === 'L').length;
+  const perempuan = siswas.filter(s => s.jk === 'P').length;
+
+  const percentLaki = totalSiswa > 0 ? Math.round((laki / totalSiswa) * 100) : 0;
+  const percentPerempuan = totalSiswa > 0 ? Math.round((perempuan / totalSiswa) * 100) : 0;
+
+  box.innerHTML = `
+    <div style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+      <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">📊 Rasio Demografi Siswa (Dokumen Akreditasi)</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="background: var(--input-bg); padding: 14px; border-radius: 8px;">
+          <h4 style="font-size: 12px; color: var(--text-muted);">Laki-Laki</h4>
+          <p style="font-size: 22px; font-weight: 800; color: var(--primary);">${laki} <span style="font-size: 13px;">(${percentLaki}%)</span></p>
+        </div>
+        <div style="background: var(--input-bg); padding: 14px; border-radius: 8px;">
+          <h4 style="font-size: 12px; color: var(--text-muted);">Perempuan</h4>
+          <p style="font-size: 22px; font-weight: 800; color: #EC4899;">${perempuan} <span style="font-size: 13px;">(${percentPerempuan}%)</span></p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ===================================================
+// DYNAMIC THEME ENGINE
 // ===================================================
 const themeStyles = {
   sage: `
@@ -398,7 +651,9 @@ function getCompleteBackupDataObject() {
     guru_list: getGuruData(),
     siswa_list: getSiswaData(),
     jadwal_list: getJadwalData(),
-    absensi_list: getAbsensiData()
+    absensi_list: getAbsensiData(),
+    nilai_list: getNilaiData(),
+    jurnal_list: getJurnalData()
   };
 }
 
@@ -437,7 +692,9 @@ function importDatabaseJSON(event) {
       if (data.siswa_list) localStorage.setItem('siakad_siswa_list', JSON.stringify(data.siswa_list));
       if (data.jadwal_list) localStorage.setItem('siakad_jadwal_list', JSON.stringify(data.jadwal_list));
       if (data.absensi_list) localStorage.setItem('siakad_absensi_list', JSON.stringify(data.absensi_list));
-      
+      if (data.nilai_list) localStorage.setItem('siakad_nilai_list', JSON.stringify(data.nilai_list));
+      if (data.jurnal_list) localStorage.setItem('siakad_jurnal_list', JSON.stringify(data.jurnal_list));
+
       if (data.academic_period) {
         if (data.academic_period.year) localStorage.setItem('academic_year', data.academic_period.year);
         if (data.academic_period.semester) localStorage.setItem('academic_semester', data.academic_period.semester);
@@ -496,7 +753,7 @@ function toggleStorageModeUI() {
   }
 }
 
-// ADAPTOR HYBRID STORAGE (LOCAL & SUPABASE CLOUD)
+// ADAPTOR HYBRID STORAGE
 const DB = {
   isSupabaseActive() {
     const mode = localStorage.getItem('storage_mode') || 'local';
@@ -522,7 +779,7 @@ const DB = {
 
     try {
       const client = this.getClient();
-      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel', 'siakad_jadwal_list', 'siakad_absensi_list'];
+      const keys = ['siakad_guru_list', 'siakad_siswa_list', 'master_kelas', 'master_mapel', 'siakad_jadwal_list', 'siakad_absensi_list', 'siakad_nilai_list', 'siakad_jurnal_list'];
 
       for (const key of keys) {
         const localData = localStorage.getItem(key);
@@ -555,12 +812,11 @@ function saveSupabaseConfig() {
 }
 
 // ===================================================
-// EXCEL IMPORT & EXPORT ENGINE (SHEETJS .XLSX)
+// EXCEL IMPORT & EXPORT ENGINE
 // ===================================================
-
 function downloadGuruExcelTemplate() {
   if (typeof XLSX === 'undefined') {
-    alert('Library SheetJS belum siap! Periksa koneksi internet atau script pada index.html.');
+    alert('Library SheetJS belum siap!');
     return;
   }
 
@@ -1417,7 +1673,6 @@ function handleSaveAbsensi(e) {
 // DASHBOARD STATS & DYNAMIC RENDERER
 // ===================================================
 function renderDashboardUI() {
-  // 1. Render Tanggal Realtime Hari Ini & Periode Akademik
   const dateEl = document.getElementById('dashTodayDate');
   const today = new Date();
   const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
@@ -1429,7 +1684,6 @@ function renderDashboardUI() {
 
   updateAcademicPeriodUI();
 
-  // 2. Render KPI Metrics Realtime
   const siswaList = getSiswaData();
   const guruList = getGuruData();
   const kelasList = getMasterData('kelas');
@@ -1443,7 +1697,6 @@ function renderDashboardUI() {
   if (elGuru) elGuru.innerText = guruList.length.toLocaleString('id-ID');
   if (elKelas) elKelas.innerText = kelasList.length.toLocaleString('id-ID');
 
-  // Calculate Presensi Hari Ini
   const todayISO = today.toISOString().split('T')[0];
   const todayAbsensi = absensiList.filter(a => a.tanggal === todayISO);
 
@@ -1471,12 +1724,10 @@ function renderDashboardUI() {
     if (elSub) elSub.innerText = 'Belum ada input presensi hari ini';
   }
 
-  // 3. Render Jadwal Pelajaran Hari Ini
   renderTodayJadwal(dayName);
-
-  // 4. Render Notifikasi Ulang Tahun Guru & Grafik Kehadiran
   renderBirthdayWidget();
   renderAttendanceChartSVG();
+  renderDemografiUI();
 }
 
 function renderTodayJadwal(dayName) {
@@ -1516,7 +1767,7 @@ function renderTodayJadwal(dayName) {
   tbody.innerHTML = html;
 }
 
-// RENDER KARTU SISWA GENERATOR
+// RENDER KARTU SISWA GENERATOR (DENGAN BARCODE)
 function renderStudentCardsUI() {
   const container = document.getElementById('studentCardContainer');
   const selectClass = document.getElementById('selectClassKartu');
@@ -1542,6 +1793,7 @@ function renderStudentCardsUI() {
   let html = '';
   filtered.forEach(siswa => {
     const photoSrc = siswa.foto ? siswa.foto : '';
+    const barcodeSVG = generateBarcodeSVG(siswa.nisn || siswa.nis);
 
     html += `
       <div class="student-id-card">
@@ -1567,7 +1819,10 @@ function renderStudentCardsUI() {
           </div>
         </div>
 
-        <div class="id-card-footer">KARTU TANDA SISWA RESMI</div>
+        <div class="id-card-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 12px;">
+          <span>KARTU TANDA SISWA RESMI</span>
+          ${barcodeSVG}
+        </div>
       </div>
     `;
   });
@@ -1633,7 +1888,7 @@ function populateDynamicSelects() {
   guruSelects.forEach(select => {
     const currentVal = select.value;
     select.innerHTML = '<option value="">-- Pilih Guru --</option>' +
-      gurus.map(g => `<option value="${g.id}">${g.nama} (${g.mapel || '-'})</option>`).join('');
+      gurus.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel || '-'})</option>`).join('');
     if (currentVal) select.value = currentVal;
   });
 }
@@ -1648,7 +1903,6 @@ function renderBirthdayWidget() {
   const currentDay = today.getDate();
   const monthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-  // Filter guru yang berulang tahun bulan ini
   const birthdayGurus = gurus.filter(g => {
     if (!g.tglLahir) return false;
     const parts = g.tglLahir.split('-');
@@ -1661,7 +1915,6 @@ function renderBirthdayWidget() {
     return;
   }
 
-  // Cek jika ada guru yang tepat berulang tahun HARI INI
   const todayGurus = birthdayGurus.filter(g => {
     const d = parseInt(g.tglLahir.split('-')[2], 10);
     return d === currentDay;
