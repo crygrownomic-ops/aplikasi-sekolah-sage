@@ -1,7 +1,7 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS & ENGINE TEMA
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS, ENGINE TEMA & SHEETJS EXCEL
 
 // ===================================================
-// DYNAMIC THEME ENGINE (CSS INJECTOR FOR INSTANT LIVE PREVIEW)
+// DYNAMIC THEME ENGINE (LIVE INTERACTIVE PREVIEW)
 // ===================================================
 const themeStyles = {
   sage: `
@@ -340,6 +340,186 @@ function saveSupabaseConfig() {
   }
 }
 
+// ===================================================
+// EXCEL IMPORT & EXPORT ENGINE (SHEETJS .XLSX)
+// ===================================================
+
+// 1. GURU EXCEL
+function downloadGuruExcelTemplate() {
+  if (typeof XLSX === 'undefined') {
+    alert('Library SheetJS belum siap! Periksa koneksi internet atau script pada index.html.');
+    return;
+  }
+
+  const data = [{
+    "Nama Lengkap": "Dr. Ahmad Fauzi, M.Pd.",
+    "NIP": "198203152010011002",
+    "NUPTK": "1234567890123456",
+    "Tempat Lahir": "Pontianak",
+    "Tanggal Lahir (YYYY-MM-DD)": "1982-09-15",
+    "L/P": "L",
+    "Agama": "Islam",
+    "Ijazah Terakhir": "S2 Pendidikan",
+    "Tahun Ijazah": "2010",
+    "Mapel Utama": "Matematika Wajib",
+    "Status Kepegawaian": "PNS / ASN",
+    "Jabatan": "Guru Ahli Madya",
+    "Pangkat Golongan": "Pembina / IV-a",
+    "Sertifikasi": "Sudah",
+    "No HP": "081234567890",
+    "Email": "fauzi@sekolah.sch.id"
+  }];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Master Guru");
+  XLSX.writeFile(wb, "Template_Import_Guru.xlsx");
+}
+
+function importGuruExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (typeof XLSX === 'undefined') {
+    alert('Library SheetJS belum siap!');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+      let list = getGuruData();
+      let count = 0;
+
+      jsonData.forEach((row, i) => {
+        if (row["Nama Lengkap"]) {
+          list.push({
+            id: Date.now() + i,
+            nama: String(row["Nama Lengkap"] || '').trim(),
+            nip: String(row["NIP"] || '').trim(),
+            nuptk: String(row["NUPTK"] || '').trim(),
+            tempatLahir: String(row["Tempat Lahir"] || '').trim(),
+            tglLahir: String(row["Tanggal Lahir (YYYY-MM-DD)"] || row["Tanggal Lahir"] || '').trim(),
+            jk: String(row["L/P"] || 'L').trim(),
+            agama: String(row["Agama"] || 'Islam').trim(),
+            ijazah: String(row["Ijazah Terakhir"] || '').trim(),
+            tahunIjazah: String(row["Tahun Ijazah"] || '').trim(),
+            mapel: String(row["Mapel Utama"] || '').trim(),
+            kepegawaian: String(row["Status Kepegawaian"] || '').trim(),
+            jabatan: String(row["Jabatan"] || '').trim(),
+            pangkatGol: String(row["Pangkat Golongan"] || '').trim(),
+            sertifikasi: String(row["Sertifikasi"] || 'Belum').trim(),
+            hp: String(row["No HP"] || '').trim(),
+            email: String(row["Email"] || '').trim()
+          });
+          count++;
+        }
+      });
+
+      localStorage.setItem('siakad_guru_list', JSON.stringify(list));
+      renderGuruListUI();
+      saveAutoBackupToFolder();
+      alert(`Berhasil mengimpor ${count} data guru dari file Excel (.xlsx)!`);
+    } catch (err) {
+      alert("Gagal membaca file Excel! Pastikan file berformat .xlsx atau .xls.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// 2. SISWA EXCEL (FORM 8355)
+function downloadSiswaExcelTemplate() {
+  if (typeof XLSX === 'undefined') {
+    alert('Library SheetJS belum siap!');
+    return;
+  }
+
+  const data = [{
+    "Kelas": "X - A",
+    "Jurusan": "IPA (Ilmu Pengetahuan Alam)",
+    "NISN": "0051234567",
+    "NIS": "23241001",
+    "Nama Lengkap Siswa": "Aditya Pratama",
+    "L/P": "L",
+    "Agama": "Islam",
+    "Tempat Lahir": "Jakarta",
+    "Tanggal Lahir (YYYY-MM-DD)": "2008-04-12",
+    "NIK": "3171000000000001",
+    "No HP": "081299990000",
+    "Nama Ayah": "Budi Pratama",
+    "Nama Ibu": "Siti Rahma",
+    "Pekerjaan Ortu": "PNS",
+    "Alamat Lengkap": "Jl. Merdeka No. 12"
+  }];
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Biodata Siswa 8355");
+  XLSX.writeFile(wb, "Template_Import_Siswa_8355.xlsx");
+}
+
+function importSiswaExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (typeof XLSX === 'undefined') {
+    alert('Library SheetJS belum siap!');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+      let list = getSiswaData();
+      let count = 0;
+
+      jsonData.forEach((row, i) => {
+        if (row["Nama Lengkap Siswa"]) {
+          list.push({
+            id: Date.now() + i,
+            kelas: String(row["Kelas"] || 'X - A').trim(),
+            jurusan: String(row["Jurusan"] || '').trim(),
+            nisn: String(row["NISN"] || '').trim(),
+            nis: String(row["NIS"] || '').trim(),
+            nama: String(row["Nama Lengkap Siswa"] || '').trim(),
+            jk: String(row["L/P"] || 'L').trim(),
+            agama: String(row["Agama"] || 'Islam').trim(),
+            tempatLahir: String(row["Tempat Lahir"] || '').trim(),
+            tglLahir: String(row["Tanggal Lahir (YYYY-MM-DD)"] || row["Tanggal Lahir"] || '').trim(),
+            nik: String(row["NIK"] || '').trim(),
+            hp: String(row["No HP"] || '').trim(),
+            ayah: String(row["Nama Ayah"] || '').trim(),
+            ibu: String(row["Nama Ibu"] || '').trim(),
+            pekerjaanOrtu: String(row["Pekerjaan Ortu"] || '').trim(),
+            alamat: String(row["Alamat Lengkap"] || '').trim(),
+            foto: ''
+          });
+          count++;
+        }
+      });
+
+      localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
+      renderClassCardsUI();
+      renderStudentCardsUI();
+      saveAutoBackupToFolder();
+      alert(`Berhasil mengimpor ${count} data siswa dari file Excel (.xlsx)!`);
+    } catch (err) {
+      alert("Gagal membaca file Excel! Pastikan file berformat .xlsx atau .xls.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 // DEFAULT MASTER DATA
 const defaultMasterData = {
   kelas: ['X - A', 'X - B', 'XI - IPA 1', 'XI - IPS 1', 'XII - IPA 1'],
@@ -586,60 +766,6 @@ function renderGuruListUI() {
   tbody.innerHTML = html;
 }
 
-function downloadGuruCSVTemplate() {
-  const headers = "nama,nip,nuptk,tempatLahir,tglLahir,jk,agama,ijazah,tahunIjazah,mapel,kepegawaian,jabatan,pangkatGol,sertifikasi,hp,email\n";
-  const sample = "Dr. Ahmad Fauzi,198203152010011002,1234567890123456,Pontianak,1982-09-15,L,Islam,S2 Pendidikan,2010,Matematika Wajib,PNS / ASN,Guru Ahli Madya,Pembina / IV-a,Sudah,081234567890,fauzi@sekolah.sch.id\n";
-  const blob = new Blob([headers + sample], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'Template_Import_Guru.csv';
-  a.click();
-}
-
-function importGuruCSV(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const lines = e.target.result.split('\n');
-    let importedCount = 0;
-    let list = getGuruData();
-
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',');
-      if (cols.length >= 2 && cols[0].trim()) {
-        list.push({
-          id: Date.now() + i,
-          nama: cols[0].trim(),
-          nip: cols[1] ? cols[1].trim() : '',
-          nuptk: cols[2] ? cols[2].trim() : '',
-          tempatLahir: cols[3] ? cols[3].trim() : '',
-          tglLahir: cols[4] ? cols[4].trim() : '',
-          jk: cols[5] ? cols[5].trim() : 'L',
-          agama: cols[6] ? cols[6].trim() : 'Islam',
-          ijazah: cols[7] ? cols[7].trim() : '',
-          tahunIjazah: cols[8] ? cols[8].trim() : '',
-          mapel: cols[9] ? cols[9].trim() : '',
-          kepegawaian: cols[10] ? cols[10].trim() : '',
-          jabatan: cols[11] ? cols[11].trim() : '',
-          pangkatGol: cols[12] ? cols[12].trim() : '',
-          sertifikasi: cols[13] ? cols[13].trim() : 'Belum',
-          hp: cols[14] ? cols[14].trim() : '',
-          email: cols[15] ? cols[15].trim() : ''
-        });
-        importedCount++;
-      }
-    }
-
-    localStorage.setItem('siakad_guru_list', JSON.stringify(list));
-    renderGuruListUI();
-    saveAutoBackupToFolder();
-    alert(`Berhasil mengimpor ${importedCount} data guru!`);
-  };
-  reader.readAsText(file);
-}
-
 // SISWA MANAGEMENT
 function getSiswaData() {
   const data = localStorage.getItem('siakad_siswa_list');
@@ -805,61 +931,6 @@ function deleteSiswaItem(id, kelas) {
     renderStudentCardsUI();
     saveAutoBackupToFolder();
   }
-}
-
-function downloadSiswaCSVTemplate() {
-  const headers = "kelas,jurusan,nisn,nis,nama,jk,agama,tempatLahir,tglLahir,nik,hp,ayah,ibu,pekerjaanOrtu,alamat\n";
-  const sample = "X - A,IPA (Ilmu Pengetahuan Alam),0051234567,23241001,Aditya Pratama,L,Islam,Jakarta,2008-04-12,3171000000000001,081299990000,Budi Pratama,Siti Rahma,PNS,Jl. Merdeka No. 12\n";
-  const blob = new Blob([headers + sample], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'Template_Import_Siswa_8355.csv';
-  a.click();
-}
-
-function importSiswaCSV(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const lines = e.target.result.split('\n');
-    let importedCount = 0;
-    let list = getSiswaData();
-
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(',');
-      if (cols.length >= 5 && cols[4].trim()) {
-        list.push({
-          id: Date.now() + i,
-          kelas: cols[0] ? cols[0].trim() : 'X - A',
-          jurusan: cols[1] ? cols[1].trim() : '',
-          nisn: cols[2] ? cols[2].trim() : '',
-          nis: cols[3] ? cols[3].trim() : '',
-          nama: cols[4].trim(),
-          jk: cols[5] ? cols[5].trim() : 'L',
-          agama: cols[6] ? cols[6].trim() : 'Islam',
-          tempatLahir: cols[7] ? cols[7].trim() : '',
-          tglLahir: cols[8] ? cols[8].trim() : '',
-          nik: cols[9] ? cols[9].trim() : '',
-          hp: cols[10] ? cols[10].trim() : '',
-          ayah: cols[11] ? cols[11].trim() : '',
-          ibu: cols[12] ? cols[12].trim() : '',
-          pekerjaanOrtu: cols[13] ? cols[13].trim() : '',
-          alamat: cols[14] ? cols[14].trim() : '',
-          foto: ''
-        });
-        importedCount++;
-      }
-    }
-
-    localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
-    renderClassCardsUI();
-    renderStudentCardsUI();
-    saveAutoBackupToFolder();
-    alert(`Berhasil mengimpor ${importedCount} data siswa ke Buku Induk!`);
-  };
-  reader.readAsText(file);
 }
 
 // RENDER KARTU SISWA GENERATOR

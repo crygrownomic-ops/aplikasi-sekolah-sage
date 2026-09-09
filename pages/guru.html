@@ -4,12 +4,12 @@
     Database Master Guru & Tenaga Pendidik
   </div>
   <div class="header-action-btns">
-    <button type="button" class="btn btn-secondary" onclick="downloadGuruCSVTemplate()">
-      ↓ Template CSV
+    <button type="button" class="btn btn-secondary" onclick="downloadGuruExcelTemplate()">
+      ↓ Template Excel (.xlsx)
     </button>
     <label class="btn btn-secondary" style="cursor: pointer;">
-      ↑ Import CSV
-      <input type="file" accept=".csv" onchange="importGuruCSV(event)" style="display: none;">
+      ↑ Import Excel
+      <input type="file" accept=".xlsx, .xls" onchange="importGuruExcel(event)" style="display: none;">
     </label>
     <button type="button" class="btn btn-primary" onclick="openGuruModal()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
