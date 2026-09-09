@@ -1,11 +1,174 @@
-// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, BACKUP & RESTORE, SUPABASE ADAPTER
+// MANAJEMEN MASTER DATA, GURU, SISWA 8355, KARTU SISWA, BACKUP/RESTORE, FOLDER ACCESS & ENGINE TEMA
 
 // ===================================================
-// LOGIKA BACKUP & RESTORE DATABASE (EXPORT / IMPORT JSON)
+// DYNAMIC THEME ENGINE (CSS INJECTOR FOR INSTANT LIVE PREVIEW)
 // ===================================================
+const themeStyles = {
+  sage: `
+    :root, [data-theme="sage"] {
+      --primary: #2E4F4F;
+      --primary-hover: #0E2F2F;
+      --accent-soft: #E8F1F1;
+      --bg-main: #F4F6F4;
+      --card-bg: #FFFFFF;
+      --input-bg: #F8FAFA;
+      --border-color: #E2E8E8;
+      --text-main: #1C2826;
+      --text-muted: #6B7C7C;
+      --sidebar-bg: #1F3333;
+    }
+  `,
+  navy: `
+    :root, [data-theme="navy"] {
+      --primary: #1E293B;
+      --primary-hover: #0F172A;
+      --accent-soft: #E2E8F0;
+      --bg-main: #F1F5F9;
+      --card-bg: #FFFFFF;
+      --input-bg: #F8FAFC;
+      --border-color: #CBD5E1;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --sidebar-bg: #0F172A;
+    }
+  `,
+  emerald: `
+    :root, [data-theme="emerald"] {
+      --primary: #065F46;
+      --primary-hover: #044E3A;
+      --accent-soft: #D1FAE5;
+      --bg-main: #ECFDF5;
+      --card-bg: #FFFFFF;
+      --input-bg: #F0FDF4;
+      --border-color: #A7F3D0;
+      --text-main: #064E3B;
+      --text-muted: #059669;
+      --sidebar-bg: #064E3B;
+    }
+  `,
+  monochrome: `
+    :root, [data-theme="monochrome"] {
+      --primary: #18181B;
+      --primary-hover: #09090B;
+      --accent-soft: #E4E4E7;
+      --bg-main: #F4F4F5;
+      --card-bg: #FFFFFF;
+      --input-bg: #FAFAFA;
+      --border-color: #E4E4E7;
+      --text-main: #09090B;
+      --text-muted: #71717A;
+      --sidebar-bg: #09090B;
+    }
+  `,
+  amber: `
+    :root, [data-theme="amber"] {
+      --primary: #78350F;
+      --primary-hover: #451A03;
+      --accent-soft: #FEF3C7;
+      --bg-main: #FFFBEB;
+      --card-bg: #FFFFFF;
+      --input-bg: #FFFDF5;
+      --border-color: #FDE68A;
+      --text-main: #451A03;
+      --text-muted: #B45309;
+      --sidebar-bg: #451A03;
+    }
+  `
+};
 
-function exportDatabaseJSON() {
-  const backupData = {
+function setTheme(themeName) {
+  const selectedTheme = themeStyles[themeName] ? themeName : 'sage';
+  
+  let styleEl = document.getElementById('dynamicThemeStyle');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamicThemeStyle';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.innerHTML = themeStyles[selectedTheme];
+
+  document.documentElement.setAttribute('data-theme', selectedTheme);
+  localStorage.setItem('app_theme', selectedTheme);
+
+  document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active'));
+  const activeCard = document.querySelector(`.theme-card[data-theme-name="${selectedTheme}"]`);
+  if (activeCard) activeCard.classList.add('active');
+}
+
+// ===================================================
+// ACCESS FOLDER HARDDISK LOKAL & PROTEKSI ANTI-HAPUS
+// ===================================================
+let globalDirHandle = null;
+
+async function selectLocalDirectory() {
+  try {
+    if ('showDirectoryPicker' in window) {
+      globalDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      document.getElementById('folderStatusText').innerText = `✅ Terhubung ke Folder: "${globalDirHandle.name}"`;
+      document.getElementById('folderStatusText').style.color = 'var(--primary)';
+      alert(`Folder "${globalDirHandle.name}" berhasil terhubung! Database akan otomatis disinkronkan ke folder ini.`);
+      saveAutoBackupToFolder();
+    } else {
+      alert('Browser ini belum mendukung akses folder langsung. Gunakan Google Chrome, Microsoft Edge, atau Brave versi terbaru.');
+    }
+  } catch (err) {
+    console.warn('Akses folder dibatalkan:', err);
+  }
+}
+
+async function saveAutoBackupToFolder() {
+  if (!globalDirHandle) return;
+  try {
+    const backupData = JSON.stringify(getCompleteBackupDataObject(), null, 2);
+    const fileHandle = await globalDirHandle.getFileHandle('DATABASE_SIAKAD_AUTOSAVE.json', { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(backupData);
+    await writable.close();
+  } catch (err) {
+    console.error('Gagal otomatis menyimpan ke folder:', err);
+  }
+}
+
+async function enablePersistentStorage() {
+  if (navigator.storage && navigator.storage.persist) {
+    const isPersisted = await navigator.storage.persist();
+    const statusEl = document.getElementById('persistenceStatus');
+    if (statusEl) {
+      if (isPersisted) {
+        statusEl.innerText = "🔒 Status: SANGAT AMAN (Kuncian Aktif, Kebal Clear Cache)";
+        statusEl.style.color = "var(--primary)";
+        alert('Proteksi Aktif! Browser telah mengunci data SIAKAD agar tidak terhapus saat pembersihan otomatis.');
+      } else {
+        statusEl.innerText = "⚠️ Status: Standar Browser (Belum Dikunci)";
+        statusEl.style.color = "#EF4444";
+      }
+    }
+  } else {
+    alert('Browser ini tidak mendukung fitur Storage Lock.');
+  }
+}
+
+async function checkStoragePersistence() {
+  if (navigator.storage && navigator.storage.persisted) {
+    const isPersisted = await navigator.storage.persisted();
+    const statusEl = document.getElementById('persistenceStatus');
+    if (statusEl) {
+      if (isPersisted) {
+        statusEl.innerText = "🔒 Status: SANGAT AMAN (Kuncian Aktif, Kebal Clear Cache)";
+        statusEl.style.color = "var(--primary)";
+      } else {
+        statusEl.innerText = "⚠️ Status: Standar Browser (Klik Tombol di Bawah)";
+        statusEl.style.color = "#EF4444";
+      }
+    }
+  }
+}
+
+// ===================================================
+// BACKUP & RESTORE JSON FILE
+// ===================================================
+function getCompleteBackupDataObject() {
+  return {
     app_title: "SIAKAD_BACKUP_DATABASE",
     version: "1.0",
     export_date: new Date().toLocaleString('id-ID'),
@@ -30,7 +193,10 @@ function exportDatabaseJSON() {
     guru_list: getGuruData(),
     siswa_list: getSiswaData()
   };
+}
 
+function exportDatabaseJSON() {
+  const backupData = getCompleteBackupDataObject();
   const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
   const downloadAnchor = document.createElement('a');
   
@@ -43,7 +209,7 @@ function exportDatabaseJSON() {
   downloadAnchor.click();
   downloadAnchor.remove();
 
-  alert('Backup database berhasil diunduh ke komputer Abah!');
+  alert('Backup database berhasil diunduh!');
 }
 
 function importDatabaseJSON(event) {
@@ -87,7 +253,7 @@ function importDatabaseJSON(event) {
       alert('RESTORE BERHASIL! 🎉\nDatabase berhasil dimuat ulang. Aplikasi akan melakukan Refresh.');
       window.location.reload();
     } catch (err) {
-      alert('Gagal merestore database! Pastikan file yang diunggah berformat .json backup resmi SIAKAD.');
+      alert('Gagal merestore database! Pastikan file berformat .json backup resmi SIAKAD.');
     }
   };
   reader.readAsText(file);
@@ -206,6 +372,7 @@ function handleAddMasterItem(e, type) {
       inputEl.value = '';
       renderMasterDataUI();
       populateDynamicSelects();
+      saveAutoBackupToFolder();
     } else {
       alert('Data ini sudah ada!');
     }
@@ -219,6 +386,7 @@ function deleteMasterItem(type, index) {
     localStorage.setItem(`master_${type}`, JSON.stringify(list));
     renderMasterDataUI();
     populateDynamicSelects();
+    saveAutoBackupToFolder();
   }
 }
 
@@ -358,6 +526,7 @@ function handleSaveGuru(e) {
   renderGuruListUI();
   populateDynamicSelects();
   renderBirthdayWidget();
+  saveAutoBackupToFolder();
 }
 
 function deleteGuruItem(id) {
@@ -369,6 +538,7 @@ function deleteGuruItem(id) {
     renderGuruListUI();
     populateDynamicSelects();
     renderBirthdayWidget();
+    saveAutoBackupToFolder();
   }
 }
 
@@ -464,6 +634,7 @@ function importGuruCSV(event) {
 
     localStorage.setItem('siakad_guru_list', JSON.stringify(list));
     renderGuruListUI();
+    saveAutoBackupToFolder();
     alert(`Berhasil mengimpor ${importedCount} data guru!`);
   };
   reader.readAsText(file);
@@ -619,6 +790,7 @@ function handleSaveSiswaGlobal(e) {
   closeAddSiswaModalGlobal();
   renderClassCardsUI();
   renderStudentCardsUI();
+  saveAutoBackupToFolder();
   alert(`Siswa ${newSiswa.nama} berhasil didaftarkan ke kelas ${newSiswa.kelas}!`);
 }
 
@@ -631,6 +803,7 @@ function deleteSiswaItem(id, kelas) {
     renderSiswaTableUI(kelas);
     renderClassCardsUI();
     renderStudentCardsUI();
+    saveAutoBackupToFolder();
   }
 }
 
@@ -683,6 +856,7 @@ function importSiswaCSV(event) {
     localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
     renderClassCardsUI();
     renderStudentCardsUI();
+    saveAutoBackupToFolder();
     alert(`Berhasil mengimpor ${importedCount} data siswa ke Buku Induk!`);
   };
   reader.readAsText(file);
@@ -757,6 +931,7 @@ function uploadSiswaPhoto(event, siswaId) {
     list = list.map(s => s.id === siswaId ? { ...s, foto: e.target.result } : s);
     localStorage.setItem('siakad_siswa_list', JSON.stringify(list));
     renderStudentCardsUI();
+    saveAutoBackupToFolder();
   };
   reader.readAsDataURL(file);
 }
@@ -851,15 +1026,6 @@ function renderBirthdayWidget() {
   `;
 }
 
-function setTheme(themeName) {
-  document.documentElement.setAttribute('data-theme', themeName);
-  localStorage.setItem('app_theme', themeName);
-
-  document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active'));
-  const activeCard = document.querySelector(`.theme-card[data-theme-name="${themeName}"]`);
-  if (activeCard) activeCard.classList.add('active');
-}
-
 function saveSchoolProfile(e) {
   e.preventDefault();
 
@@ -872,6 +1038,7 @@ function saveSchoolProfile(e) {
   if (schoolPhone) localStorage.setItem('school_phone', schoolPhone);
 
   updateHeaderUI();
+  saveAutoBackupToFolder();
   alert('Profil Sekolah Berhasil Disimpan!');
 }
 
@@ -882,6 +1049,7 @@ function handleLogoUpload(event) {
     reader.onload = function(e) {
       localStorage.setItem('school_logo', e.target.result);
       updateHeaderUI();
+      saveAutoBackupToFolder();
     };
     reader.readAsDataURL(file);
   }
@@ -936,6 +1104,7 @@ function loadSchoolSettings() {
   }
 
   updateHeaderUI();
+  checkStoragePersistence();
 }
 
 if (document.readyState === 'loading') {

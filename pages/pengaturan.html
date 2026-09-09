@@ -1,12 +1,12 @@
 <div class="section-title">
   <div class="section-title-left">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    Pengaturan Sistem & Manajemen Database
+    Pengaturan Sistem & Keamanan Database
   </div>
 </div>
 
 <!-- 1. IDENTITAS SEKOLAH -->
-<form onsubmit="saveSchoolProfile(event)" style="margin-bottom: 30px;">
+<form onsubmit="saveSchoolProfile(event)" style="margin-bottom: 28px;">
   <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">Identitas Utama Sekolah</h3>
   <div class="form-grid">
     <div class="form-group full-width">
@@ -31,51 +31,40 @@
   </div>
 </form>
 
-<!-- 2. MODE PENYIMPANAN & BACKUP RESTORE DATABASE (FITUR BARU) -->
-<div style="border-top: 1px solid var(--border-color); margin-bottom: 30px; padding-top: 20px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Opsi Penyimpanan & Backup Database</h3>
+<!-- 2. PILIH FOLDER KOMPUTER & KEAMANAN LOKAL (FITUR BARU ANTI HAPUS) -->
+<div style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
+  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Penyimpanan Harddisk Lokal & Proteksi Anti-Hapus</h3>
   <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-    Kelola sistem penyimpanan data lokal atau hubungan ke server cloud Supabase.
+    Hubungkan folder komputer agar backup terisi otomatis dan kunci browser agar data kebal dari pembersihan cache.
   </p>
 
-  <div class="form-grid" style="margin-bottom: 20px;">
-    <div class="form-group full-width">
-      <label>Pilih Mode Penyimpanan Utama</label>
-      <select id="selectStorageMode" onchange="toggleStorageModeUI()">
-        <option value="local">Mode Offline (Penyimpanan Lokal Browser)</option>
-        <option value="supabase">Mode Cloud Online (Supabase Database)</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- CONTAINER FORM SUPABASE (MUNCUL JIKA DIPILIH SUPABASE) -->
-  <div id="supabaseConfigContainer" style="display: none; background: var(--input-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">Kredensial Supabase Cloud</h4>
-    <div class="form-grid">
-      <div class="form-group full-width">
-        <label>Supabase Project URL</label>
-        <input type="text" id="inputSupabaseUrl" placeholder="https://xyzcompany.supabase.co">
-      </div>
-      <div class="form-group full-width">
-        <label>Supabase Anon Key</label>
-        <input type="password" id="inputSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
-      </div>
-    </div>
-    <div style="display: flex; gap: 10px; margin-top: 12px;">
-      <button type="button" class="btn btn-secondary" onclick="DB.migrateLocalToSupabase()">
-        ☁️ Sync / Upload Data Lokal ke Supabase
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+    <!-- KARTU SAMBUNG FOLDER LOKAL -->
+    <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px;">
+      <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">📁 Folder Penyimpanan Komputer</h4>
+      <p id="folderStatusText" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Belum ada folder yang terhubung.</p>
+      <button type="button" class="btn btn-secondary" onclick="selectLocalDirectory()">
+        Pilih Folder di Laptop (D:/ atau C:/)
       </button>
-      <button type="button" class="btn btn-primary" onclick="saveSupabaseConfig()">
-        Simpan Kredensial Supabase
+    </div>
+
+    <!-- KARTU PROTEKSI BROWSER -->
+    <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px;">
+      <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">🛡️ Proteksi Memori Browser</h4>
+      <p id="persistenceStatus" style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px;">
+        Mengecek status kuncian memori...
+      </p>
+      <button type="button" class="btn btn-secondary" onclick="enablePersistentStorage()">
+        Kunci Data agar Kebal Clear Cache
       </button>
     </div>
   </div>
 
-  <!-- PANEL FITUR BACKUP & RESTORE -->
+  <!-- PANEL BACKUP & RESTORE MANUAL -->
   <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px;">
-    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">Backup & Restore Data Lokal (JSON)</h4>
+    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">Cadangan Manual (JSON File)</h4>
     <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
-      Unduh cadangan data untuk mengamankan file atau pindahkan ke komputer lain.
+      Unduh atau muat ulang file cadangan database SIAKAD kapan saja.
     </p>
 
     <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
@@ -95,9 +84,52 @@
   </div>
 </div>
 
-<!-- 3. PILIHAN TEMA WARNA APLIKASI -->
+<!-- 3. MODE SUPABASE CLOUD OPTIONAL -->
+<div style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
+  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Database Cloud Online (Supabase Optional)</h3>
+  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+    Aktifkan jika ingin menyinkronkan data ke server cloud online.
+  </p>
+
+  <div class="form-grid" style="margin-bottom: 16px;">
+    <div class="form-group full-width">
+      <label>Mode Penyimpanan Utama</label>
+      <select id="selectStorageMode" onchange="toggleStorageModeUI()">
+        <option value="local">Mode Offline (Penyimpanan Komputer Lokal)</option>
+        <option value="supabase">Mode Online (Supabase Cloud Database)</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="supabaseConfigContainer" style="display: none; background: var(--input-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label>Supabase Project URL</label>
+        <input type="text" id="inputSupabaseUrl" placeholder="https://xyzcompany.supabase.co">
+      </div>
+      <div class="form-group full-width">
+        <label>Supabase Anon Key</label>
+        <input type="password" id="inputSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 12px;">
+      <button type="button" class="btn btn-secondary" onclick="DB.migrateLocalToSupabase()">
+        ☁️ Sync / Upload Data Lokal ke Supabase
+      </button>
+      <button type="button" class="btn btn-primary" onclick="saveSupabaseConfig()">
+        Simpan Kredensial Supabase
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 4. PILIHAN TEMA WARNA APLIKASI (INTERAKTIF LANGSUNG BERUBAH) -->
 <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">Pilihan Tema Warna Aplikasi</h3>
+  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Pilihan Tema Warna Tampilan</h3>
+  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+    Klik pada salah satu kartu warna di bawah. Tampilan warna aplikasi akan langsung berganti seketika!
+  </p>
+
   <div class="theme-selector-grid">
     <div class="theme-card" data-theme-name="sage" onclick="setTheme('sage')">
       <div class="theme-color-preview" style="background: #2E4F4F;"></div>Sage Green
@@ -110,6 +142,9 @@
     </div>
     <div class="theme-card" data-theme-name="monochrome" onclick="setTheme('monochrome')">
       <div class="theme-color-preview" style="background: #18181B;"></div>Monochrome
+    </div>
+    <div class="theme-card" data-theme-name="amber" onclick="setTheme('amber')">
+      <div class="theme-color-preview" style="background: #78350F;"></div>Warm Amber
     </div>
   </div>
 </div>
