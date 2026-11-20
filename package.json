@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "Sistem Informasi Akademik Sekolah dengan penyimpanan lokal dan backup JSON otomatis",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite --open",
     "build": "vite build",
