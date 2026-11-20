@@ -80,6 +80,15 @@ Yang perlu diketahui setelah di-deploy:
 - **Izin folder mungkin perlu diklik ulang** setelah komputer direstart atau browser ditutup. Klik tombol **Pulihkan Izin Folder** di Pengaturan bila status menunjukkan demikian.
 - **Domain menentukan data.** Data di `https://project.vercel.app` terpisah dari data di custom domain. Gunakan export/import JSON untuk memindahkannya.
 
+### Troubleshooting deploy Vercel
+
+| Gejala | Penyebab | Solusi |
+|---|---|---|
+| `vite: command not found` / exit code 127 | Vercel melewati instal dependency (`Skipping "install" command...`) | `vercel.json` sudah memuat `"installCommand": "npm ci"`. Pastikan pengaturan ini tidak dihapus. |
+| Vercel memakai Node 26.x padahal project diset 24.x | `engines.node` di `package.json` memaksa upgrade otomatis | `engines` sudah dihapus agar Vercel memakai versi Node dari Project Settings (disarankan **20.x/24.x**). |
+| Halaman tidak berubah setelah deploy | Browser cache | Hard refresh `Ctrl + Shift + R`. |
+| `pages/*.html` tidak ikut ter-build | Folder tidak disalin saat build | `vite.config.js` menyalin folder `js/` dan `pages/` saat `closeBundle`; jangan dihapus. |
+
 ## 💾 Cara Kerja Backup
 
 1. Buka **Pengaturan Sistem → Penyimpanan Komputer Lokal**.
