@@ -458,132 +458,35 @@ function renderDemografiUI() {
 }
 
 // ===================================================
-// DYNAMIC THEME ENGINE
+// ENGINE TEMA — palet didefinisikan di css/themes.css
 // ===================================================
-const themeStyles = {
-  sage: `
-    :root, [data-theme="sage"] {
-      --primary: #2E4F4F;
-      --primary-hover: #0E2F2F;
-      --accent-soft: #E8F1F1;
-      --bg-main: #F4F6F4;
-      --card-bg: #FFFFFF;
-      --input-bg: #F8FAFA;
-      --border-color: #E2E8E8;
-      --text-main: #1C2826;
-      --text-muted: #6B7C7C;
-      --sidebar-bg: #1F3333;
-    }
-  `,
-  navy: `
-    :root, [data-theme="navy"] {
-      --primary: #1E293B;
-      --primary-hover: #0F172A;
-      --accent-soft: #E2E8F0;
-      --bg-main: #F1F5F9;
-      --card-bg: #FFFFFF;
-      --input-bg: #F8FAFC;
-      --border-color: #CBD5E1;
-      --text-main: #0F172A;
-      --text-muted: #64748B;
-      --sidebar-bg: #0F172A;
-    }
-  `,
-  emerald: `
-    :root, [data-theme="emerald"] {
-      --primary: #065F46;
-      --primary-hover: #044E3A;
-      --accent-soft: #D1FAE5;
-      --bg-main: #ECFDF5;
-      --card-bg: #FFFFFF;
-      --input-bg: #F0FDF4;
-      --border-color: #A7F3D0;
-      --text-main: #064E3B;
-      --text-muted: #059669;
-      --sidebar-bg: #064E3B;
-    }
-  `,
-  monochrome: `
-    :root, [data-theme="monochrome"] {
-      --primary: #18181B;
-      --primary-hover: #09090B;
-      --accent-soft: #E4E4E7;
-      --bg-main: #F4F4F5;
-      --card-bg: #FFFFFF;
-      --input-bg: #FAFAFA;
-      --border-color: #E4E4E7;
-      --text-main: #09090B;
-      --text-muted: #71717A;
-      --sidebar-bg: #09090B;
-    }
-  `,
-  amber: `
-    :root, [data-theme="amber"] {
-      --primary: #78350F;
-      --primary-hover: #451A03;
-      --accent-soft: #FEF3C7;
-      --bg-main: #FFFBEB;
-      --card-bg: #FFFFFF;
-      --input-bg: #FFFDF5;
-      --border-color: #FDE68A;
-      --text-main: #451A03;
-      --text-muted: #B45309;
-      --sidebar-bg: #451A03;
-    }
-  `
-};
-
 function setTheme(themeName) {
-  const selectedTheme = themeStyles[themeName] ? themeName : 'sage';
-  
-  let styleEl = document.getElementById('dynamicThemeStyle');
-  if (!styleEl) {
-    styleEl = document.createElement('style');
-    styleEl.id = 'dynamicThemeStyle';
-    document.head.appendChild(styleEl);
+  if (window.Shell) {
+    Shell.applyTheme(themeName);
+    return;
   }
-  styleEl.innerHTML = themeStyles[selectedTheme];
-
-  document.documentElement.setAttribute('data-theme', selectedTheme);
-  localStorage.setItem('app_theme', selectedTheme);
-
-  document.querySelectorAll('.theme-card').forEach(card => card.classList.remove('active'));
-  const activeCard = document.querySelector(`.theme-card[data-theme-name="${selectedTheme}"]`);
-  if (activeCard) activeCard.classList.add('active');
+  const selected = themeName || 'sage';
+  document.documentElement.setAttribute('data-theme', selected);
+  if (localStorage.getItem('app_theme') !== selected) localStorage.setItem('app_theme', selected);
+  document.querySelectorAll('.theme-card').forEach((card) => {
+    card.classList.toggle('active', card.getAttribute('data-theme-name') === selected);
+  });
 }
 
 // ===================================================
 // ACCESS FOLDER HARDDISK LOKAL & PROTEKSI ANTI-HAPUS
 // ===================================================
-let globalDirHandle = null;
-
+// Folder dikelola terpusat oleh StorageManager (izin disimpan di IndexedDB).
 async function selectLocalDirectory() {
-  try {
-    if ('showDirectoryPicker' in window) {
-      globalDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-      document.getElementById('folderStatusText').innerText = `✅ Terhubung ke Folder: "${globalDirHandle.name}"`;
-      document.getElementById('folderStatusText').style.color = 'var(--primary)';
-      alert(`Folder "${globalDirHandle.name}" berhasil terhubung! Database akan otomatis disinkronkan ke folder ini.`);
-      saveAutoBackupToFolder();
-    } else {
-      alert('Browser ini belum mendukung akses folder langsung. Gunakan Google Chrome, Microsoft Edge, atau Brave versi terbaru.');
-    }
-  } catch (err) {
-    console.warn('Akses folder dibatalkan:', err);
-  }
+  if (window.Shell) return Shell.selectFolder();
+  if (window.StorageManager) return StorageManager.connectFolder();
+  alert('Modul penyimpanan lokal belum termuat.');
+  return { ok: false };
 }
 
 async function saveAutoBackupToFolder() {
-  if (!globalDirHandle) return;
-  try {
-    const backupData = JSON.stringify(getCompleteBackupDataObject(), null, 2);
-    const fileHandle = await globalDirHandle.getFileHandle('DATABASE_SIAKAD_AUTOSAVE.json', { create: true });
-    const writable = await fileHandle.createWritable();
-    await writable.write(backupData);
-    await writable.close();
-  } catch (err) {
-    console.error('Gagal otomatis menyimpan ke folder:', err);
-  }
+  if (window.StorageManager) return StorageManager.backupNow({ reason: 'manual' });
+  return { ok: false };
 }
 
 async function enablePersistentStorage() {
@@ -659,83 +562,93 @@ function getCompleteBackupDataObject() {
 
 function exportDatabaseJSON() {
   const backupData = getCompleteBackupDataObject();
-  const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-  const downloadAnchor = document.createElement('a');
-  
-  const today = new Date();
-  const dateStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
-  
-  downloadAnchor.setAttribute("href", jsonString);
-  downloadAnchor.setAttribute("download", `BACKUP_SIAKAD_${dateStr}.json`);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
+  backupData.version = '2.0';
+  backupData.meta = {
+    app: 'SIAKAD SAGE',
+    schema: 2,
+    savedAt: Date.now(),
+    savedAtISO: new Date().toISOString()
+  };
 
-  alert('Backup database berhasil diunduh!');
+  const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const today = new Date();
+  const pad = (value) => String(value).padStart(2, '0');
+  const dateStr = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate()) +
+    '_' + pad(today.getHours()) + pad(today.getMinutes());
+
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = 'BACKUP_SIAKAD_' + dateStr + '.json';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+  showToast('Backup JSON berhasil diunduh.', 'success');
 }
 
 function importDatabaseJSON(event) {
-  const file = event.target.files[0];
+  const input = event.target;
+  const file = input.files && input.files[0];
   if (!file) return;
 
-  if (!confirm('PERINGATAN!\n\nMengimpor file backup ini akan memperbarui dan menimpa database saat ini.\nApakah Abah yakin ingin melanjutkan?')) {
-    event.target.value = '';
+  const modeEl = document.getElementById('selectImportMode');
+  const mode = modeEl ? modeEl.value : 'replace';
+  const keterangan = mode === 'merge'
+    ? 'Data dari file akan DIGABUNGKAN dengan data saat ini (data dengan ID sama akan diperbarui).'
+    : 'Data dari file akan TIMPA seluruh data aplikasi saat ini.';
+
+  if (!confirm('IMPORT DATABASE SIAKAD\n\n' + keterangan + '\n\nPastikan file berasal dari backup SIAKAD. Lanjutkan?')) {
+    input.value = '';
     return;
   }
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function (e) {
     try {
       const data = JSON.parse(e.target.result);
-
-      if (data.guru_list) localStorage.setItem('siakad_guru_list', JSON.stringify(data.guru_list));
-      if (data.siswa_list) localStorage.setItem('siakad_siswa_list', JSON.stringify(data.siswa_list));
-      if (data.jadwal_list) localStorage.setItem('siakad_jadwal_list', JSON.stringify(data.jadwal_list));
-      if (data.absensi_list) localStorage.setItem('siakad_absensi_list', JSON.stringify(data.absensi_list));
-      if (data.nilai_list) localStorage.setItem('siakad_nilai_list', JSON.stringify(data.nilai_list));
-      if (data.jurnal_list) localStorage.setItem('siakad_jurnal_list', JSON.stringify(data.jurnal_list));
-
-      if (data.academic_period) {
-        if (data.academic_period.year) localStorage.setItem('academic_year', data.academic_period.year);
-        if (data.academic_period.semester) localStorage.setItem('academic_semester', data.academic_period.semester);
+      if (!data || typeof data !== 'object' || (!data.app_title && !data.guru_list && !data.siswa_list && !data.master_data)) {
+        throw new Error('Format file bukan backup SIAKAD yang valid.');
       }
+      if (!window.StorageManager) throw new Error('Modul penyimpanan belum siap.');
 
-      if (data.master_data) {
-        if (data.master_data.kelas) localStorage.setItem('master_kelas', JSON.stringify(data.master_data.kelas));
-        if (data.master_data.mapel) localStorage.setItem('master_mapel', JSON.stringify(data.master_data.mapel));
-        if (data.master_data.kepegawaian) localStorage.setItem('master_kepegawaian', JSON.stringify(data.master_data.kepegawaian));
-        if (data.master_data.jurusan) localStorage.setItem('master_jurusan', JSON.stringify(data.master_data.jurusan));
-      }
+      StorageManager.applyBackupData(data, { mode: mode });
+      await StorageManager.backupNow({ force: true, reason: 'import' });
 
-      if (data.school_info) {
-        if (data.school_info.name) localStorage.setItem('school_name', data.school_info.name);
-        if (data.school_info.email) localStorage.setItem('school_email', data.school_info.email);
-        if (data.school_info.phone) localStorage.setItem('school_phone', data.school_info.phone);
-        if (data.school_info.logo) localStorage.setItem('school_logo', data.school_info.logo);
-      }
-
-      if (data.settings) {
-        if (data.settings.app_theme) localStorage.setItem('app_theme', data.settings.app_theme);
-        if (data.settings.storage_mode) localStorage.setItem('storage_mode', data.settings.storage_mode);
-        if (data.settings.supabase_url) localStorage.setItem('supabase_url', data.settings.supabase_url);
-        if (data.settings.supabase_key) localStorage.setItem('supabase_key', data.settings.supabase_key);
-      }
-
-      alert('RESTORE BERHASIL! 🎉\nDatabase berhasil dimuat ulang. Aplikasi akan melakukan Refresh.');
-      window.location.reload();
+      showToast('Import database berhasil. Aplikasi akan dimuat ulang.', 'success');
+      setTimeout(() => window.location.reload(), 600);
     } catch (err) {
-      alert('Gagal merestore database! Pastikan file berformat .json backup resmi SIAKAD.');
+      showToast('Gagal import: ' + (err.message || 'File tidak dikenali.'), 'error');
+      input.value = '';
     }
+  };
+  reader.onerror = function () {
+    showToast('Gagal membaca file backup.', 'error');
+    input.value = '';
   };
   reader.readAsText(file);
 }
 
 function resetDatabaseToDefault() {
-  if (confirm('APAKAH ABAH BENAR-BENAR YAKIN?\n\nSemua data guru, siswa, master data, dan logo akan dihapus secara permanen dari browser ini.')) {
-    localStorage.clear();
-    alert('Database telah dibersihkan sepenuhnya!');
-    window.location.reload();
+  if (!confirm('RESET DATABASE\n\nSemua data guru, siswa, nilai, presensi, dan master data akan dihapus dari browser ini.\nBackup di folder lokal TIDAK ikut terhapus.\n\nLanjutkan?')) return;
+
+  const keys = [
+    'siakad_guru_list', 'siakad_siswa_list', 'siakad_jadwal_list',
+    'siakad_absensi_list', 'siakad_nilai_list', 'siakad_jurnal_list',
+    'master_kelas', 'master_mapel', 'master_kepegawaian', 'master_jurusan',
+    'school_name', 'school_email', 'school_phone', 'school_logo'
+  ];
+  if (window.StorageManager) {
+    StorageManager.withoutBackup(() => keys.forEach((key) => localStorage.removeItem(key)));
+    StorageManager.markClean();
+  } else {
+    keys.forEach((key) => localStorage.removeItem(key));
   }
+
+  // Backup terakhir di folder sengaja dipertahankan sebagai jalan pulang.
+  showToast('Database dikosongkan. Backup terakhir masih bisa dipulihkan dari folder.', 'info');
+  setTimeout(() => window.location.reload(), 600);
 }
 
 function toggleStorageModeUI() {
@@ -2026,6 +1939,11 @@ function loadSchoolSettings() {
   updateHeaderUI();
   updateAcademicPeriodUI();
   checkStoragePersistence();
+
+  if (window.StorageManager) {
+    StorageManager.updateUI();
+    StorageManager.refreshHistory();
+  }
 }
 
 if (document.readyState === 'loading') {

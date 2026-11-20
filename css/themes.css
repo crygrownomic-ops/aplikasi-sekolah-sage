@@ -1,26 +1,139 @@
-/* ===================================================
-   5 VARIASI TEMA WARNA APLIKASI
-   =================================================== */
+/* ==========================================================================
+   SIAKAD SAGE — PALET WARNA TEMA
+   setTheme() hanya mengubah atribut data-theme; seluruh warna ada di sini.
+   Alias (--card-bg, --primary, --sidebar-bg) menjaga kompatibilitas template lama.
+   ========================================================================== */
 
-/* 1. TEMA SAGE GREEN (Default - Teduh & Alami) */
-:root, [data-theme="sage"] {
+:root {
+  --card-bg: var(--bg-card);
+  --sidebar-bg: var(--bg-sidebar);
+  --primary: var(--primary-btn);
+  --primary-hover: var(--primary-btn-hover);
+
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #3B82F6;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.10);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.16);
+}
+
+/* 1. SAGE GREEN — tema bawaan, teduh dan alami */
+:root,
+[data-theme="sage"] {
   --bg-main: #EAF0E8;
   --bg-card: #FFFFFF;
   --bg-sidebar: #2C3A2E;
-  --sidebar-hover: #3D4A3E;
-  --text-main: #2C3A2E;
-  --text-muted: #5C6B5E;
-  --border-color: #D3DDD0;
+  --sidebar-hover: #405243;
+  --text-main: #233027;
+  --text-muted: #66796B;
+  --border-color: #D8E2D4;
   --input-bg: #F7F9F6;
   --input-border: #C2D1BC;
-  --accent-soft: #D3DDD0;
-  --primary-btn: #2C3A2E;
-  --primary-btn-hover: #3D4A3E;
-  --brand-icon-bg: #A3B899;
-  --brand-icon-color: #2C3A2E;
+  --accent-soft: #DCE9D8;
+  --primary-btn: #2E4F4F;
+  --primary-btn-hover: #1F3A3A;
+  --brand-icon-bg: #A8C09E;
+  --brand-icon-color: #1F3A3A;
 }
 
-/* 2. TEMA BIRU PENDIDIKAN (Formal & Elegan) */
+/* 2. CLASSIC NAVY — formal dan elegan */
+[data-theme="navy"] {
+  --bg-main: #EEF2F8;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #172554;
+  --sidebar-hover: #1E40AF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border-color: #D6DEEA;
+  --input-bg: #F8FAFC;
+  --input-border: #B9C7DC;
+  --accent-soft: #DBEAFE;
+  --primary-btn: #1D4ED8;
+  --primary-btn-hover: #1E40AF;
+  --brand-icon-bg: #93C5FD;
+  --brand-icon-color: #172554;
+}
+
+/* 3. EMERALD — segar dan profesional */
+[data-theme="emerald"] {
+  --bg-main: #EAF7F1;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #064E3B;
+  --sidebar-hover: #047857;
+  --text-main: #064E3B;
+  --text-muted: #4B7F70;
+  --border-color: #C6E8D9;
+  --input-bg: #F2FBF7;
+  --input-border: #9CD5BC;
+  --accent-soft: #D1FAE5;
+  --primary-btn: #047857;
+  --primary-btn-hover: #065F46;
+  --brand-icon-bg: #6EE7B7;
+  --brand-icon-color: #064E3B;
+}
+
+/* 4. MONOCHROME — minimalis dan fokus */
+[data-theme="monochrome"] {
+  --bg-main: #F4F4F5;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #18181B;
+  --sidebar-hover: #3F3F46;
+  --text-main: #18181B;
+  --text-muted: #71717A;
+  --border-color: #E4E4E7;
+  --input-bg: #FAFAFA;
+  --input-border: #D4D4D8;
+  --accent-soft: #E4E4E7;
+  --primary-btn: #27272A;
+  --primary-btn-hover: #18181B;
+  --brand-icon-bg: #D4D4D8;
+  --brand-icon-color: #18181B;
+}
+
+/* 5. WARM AMBER — hangat dan estetik */
+[data-theme="amber"] {
+  --bg-main: #FDF8F3;
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #4A2E1A;
+  --sidebar-hover: #78350F;
+  --text-main: #291E13;
+  --text-muted: #8A7460;
+  --border-color: #EADBC8;
+  --input-bg: #FBF6F0;
+  --input-border: #DCC7AC;
+  --accent-soft: #FEF3C7;
+  --primary-btn: #92400E;
+  --primary-btn-hover: #78350F;
+  --brand-icon-bg: #FDE68A;
+  --brand-icon-color: #4A2E1A;
+}
+
+/* 6. DARK SLATE — nyaman untuk pemakaian malam hari */
+[data-theme="dark"] {
+  --bg-main: #0F172A;
+  --bg-card: #1E293B;
+  --bg-sidebar: #020617;
+  --sidebar-hover: #1E293B;
+  --text-main: #F1F5F9;
+  --text-muted: #94A3B8;
+  --border-color: #334155;
+  --input-bg: #0F172A;
+  --input-border: #475569;
+  --accent-soft: #334155;
+  --primary-btn: #0EA5E9;
+  --primary-btn-hover: #0284C7;
+  --brand-icon-bg: #38BDF8;
+  --brand-icon-color: #0F172A;
+}
+
+/* 7. BLUE — alternatif formal */
 [data-theme="blue"] {
   --bg-main: #EBF3FA;
   --bg-card: #FFFFFF;
@@ -38,43 +151,7 @@
   --brand-icon-color: #1E3A8A;
 }
 
-/* 3. TEMA AMBER TERRACOTTA (Hangat & Estetik) */
-[data-theme="amber"] {
-  --bg-main: #FDF8F3;
-  --bg-card: #FFFFFF;
-  --bg-sidebar: #4A2E1A;
-  --sidebar-hover: #78350F;
-  --text-main: #291E13;
-  --text-muted: #786C60;
-  --border-color: #E6D7C3;
-  --input-bg: #FAF5EF;
-  --input-border: #D1C0AA;
-  --accent-soft: #F3E5D8;
-  --primary-btn: #4A2E1A;
-  --primary-btn-hover: #78350F;
-  --brand-icon-bg: #FDE68A;
-  --brand-icon-color: #4A2E1A;
-}
-
-/* 4. TEMA DARK SLATE (Modern & Anti Silau) */
-[data-theme="dark"] {
-  --bg-main: #0F172A;
-  --bg-card: #1E293B;
-  --bg-sidebar: #020617;
-  --sidebar-hover: #1E293B;
-  --text-main: #F8FAFC;
-  --text-muted: #94A3B8;
-  --border-color: #334155;
-  --input-bg: #0F172A;
-  --input-border: #475569;
-  --accent-soft: #334155;
-  --primary-btn: #0284C7;
-  --primary-btn-hover: #0369A1;
-  --brand-icon-bg: #38BDF8;
-  --brand-icon-color: #0F172A;
-}
-
-/* 5. TEMA TEAL FRESH (Segar & Berseka) */
+/* 8. TEAL — segar dan bersih */
 [data-theme="teal"] {
   --bg-main: #E6F4F1;
   --bg-card: #FFFFFF;
@@ -83,11 +160,11 @@
   --text-main: #042F2C;
   --text-muted: #4A7A77;
   --border-color: #B2DFDB;
-  --input-bg: #F0FDF4;
+  --input-bg: #F0FDFA;
   --input-border: #99F6E4;
   --accent-soft: #CCFBF1;
-  --primary-btn: #134E4A;
-  --primary-btn-hover: #0F766E;
+  --primary-btn: #0F766E;
+  --primary-btn-hover: #134E4A;
   --brand-icon-bg: #2DD4BF;
-  --brand-icon-color: #134E4A;
+  --brand-icon-color: #042F2C;
 }

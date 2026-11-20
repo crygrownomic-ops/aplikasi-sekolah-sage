@@ -1,0 +1,490 @@
+/* ==========================================================================
+   SIAKAD SAGE — MODERN UI POLISH
+   Dimuat setelah style.css. Menambahkan sidebar toggle, header status backup,
+   panel pengaturan, kartu ringkas, dan penyesuaian layar kecil.
+   ========================================================================== */
+
+/* ---------- FONT & SCROLLBAR ---------- */
+* {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+:focus-visible {
+  outline: 2px solid var(--primary-btn);
+  outline-offset: 2px;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+  width: 248px;
+  padding: 16px 12px;
+  gap: 6px;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s ease;
+}
+
+.sidebar:hover { width: 248px; }
+
+.sidebar.collapsed,
+.sidebar.collapsed:hover { width: 74px; }
+
+.sidebar .brand-header,
+.sidebar .nav-item { width: 100%; }
+
+.sidebar .brand-header { position: relative; }
+
+.sidebar .nav-item {
+  height: 44px;
+  position: relative;
+  gap: 12px;
+}
+
+.sidebar .nav-item .nav-label {
+  margin-left: 0;
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .brand-title,
+.sidebar.collapsed .nav-section-label { opacity: 0; visibility: hidden; }
+
+.sidebar .nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--brand-icon-bg);
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--brand-icon-bg);
+  opacity: 0.7;
+  padding: 14px 12px 4px;
+  white-space: nowrap;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  right: -13px;
+  top: 26px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  z-index: 3;
+}
+
+.sidebar-toggle svg { width: 14px; height: 14px; transition: transform 0.25s ease; }
+.sidebar.collapsed .sidebar-toggle svg { transform: rotate(180deg); }
+
+.nav-logout { margin-top: auto; }
+
+/* ---------- HEADER ---------- */
+.top-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 14px 28px;
+  gap: 14px;
+}
+
+.mobile-menu-btn {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--input-bg);
+  color: var(--text-main);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.school-info h1 {
+  font-size: 17px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 38vw;
+}
+
+.backup-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 999px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.backup-chip-text { max-width: 210px; overflow: hidden; text-overflow: ellipsis; }
+
+.backup-chip-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--primary-btn);
+  cursor: pointer;
+}
+
+.backup-chip-btn svg { width: 13px; height: 13px; }
+.backup-chip-btn:hover { background: var(--primary-btn); color: var(--bg-card); }
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--warning);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16);
+}
+
+.status-dot.ok { background: var(--success); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16); }
+.status-dot.warn { background: var(--warning); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.16); }
+.status-dot.error { background: var(--danger); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16); }
+
+/* ---------- KONTEN ---------- */
+.content-area {
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  margin: 18px 26px 14px;
+  padding: 24px 26px;
+}
+
+.section-title {
+  border-bottom-color: var(--border-color);
+  padding-bottom: 14px;
+}
+
+.section-title-left svg { color: var(--primary-btn); }
+
+.header-action-btns { flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---------- KARTU & TABEL ---------- */
+.metric-card {
+  background: linear-gradient(145deg, var(--bg-card), var(--input-bg));
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.metric-icon { color: var(--primary-btn); }
+.metric-number { font-size: 26px; letter-spacing: -0.5px; }
+
+.table-scroll-container { box-shadow: var(--shadow-sm); }
+.table-scroll-container tbody tr:hover { background: var(--input-bg); }
+.table-scroll-container tbody tr:last-child td { border-bottom: none; }
+
+.btn {
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:active { transform: translateY(1px); }
+.btn-secondary { background: var(--input-bg); border-color: var(--border-color); }
+.btn-secondary:hover { background: var(--accent-soft); }
+.btn-ghost { background: transparent; border-color: transparent; box-shadow: none; color: var(--text-muted); }
+.btn-ghost:hover { background: var(--accent-soft); color: var(--text-main); }
+.btn-xs { padding: 5px 10px; font-size: 11px; border-radius: 6px; }
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ---------- TOAST ---------- */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+#toastContainer > div { backdrop-filter: blur(6px); }
+
+/* ---------- DASHBOARD: STATUS PENYIMPANAN ---------- */
+.storage-status-card {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.storage-status-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.storage-status-head h4 { font-size: 13px; font-weight: 700; color: var(--text-main); }
+.storage-status-icon { font-size: 18px; }
+
+.storage-status-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* ---------- PENGATURAN ---------- */
+.settings-panel {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.settings-panel > h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.settings-panel > p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.storage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.setting-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.setting-card.is-connected { border-color: var(--primary-btn); }
+
+.setting-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-card p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; }
+
+.setting-card .btn { margin-right: 6px; margin-bottom: 6px; }
+
+.info-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 14px;
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+
+.info-list dt { color: var(--text-muted); }
+.info-list dd { color: var(--text-main); font-weight: 600; overflow-wrap: anywhere; }
+
+.switch-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px dashed var(--border-color);
+  font-size: 12px;
+}
+
+.switch-line:first-of-type { border-top: none; }
+
+.switch input {
+  appearance: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--border-color);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.switch input::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.switch input:checked { background: var(--success); }
+.switch input:checked::after { transform: translateX(16px); }
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+  margin-bottom: 8px;
+}
+
+.history-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--primary-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.history-icon svg { width: 15px; height: 15px; }
+
+.history-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.history-meta strong { font-size: 12px; color: var(--text-main); overflow-wrap: anywhere; }
+.history-meta span { font-size: 11px; color: var(--text-muted); }
+.history-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.empty-state {
+  padding: 18px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-color);
+  border-radius: 10px;
+  background: var(--input-bg);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--primary-btn);
+}
+
+/* ---------- RESPONSIF ---------- */
+@media (max-width: 1100px) {
+  .school-contact-bar { display: none; }
+}
+
+@media (max-width: 900px) {
+  .app-container { height: 100dvh; }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 248px;
+    transform: translateX(-105%);
+    z-index: 1100;
+  }
+
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .brand-title,
+  .sidebar.collapsed .nav-section-label { opacity: 1; visibility: visible; }
+  .sidebar-toggle { display: none; }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1050;
+    transition: opacity 0.25s ease;
+  }
+
+  .sidebar-backdrop.visible { opacity: 1; visibility: visible; }
+  .mobile-menu-btn { display: flex; }
+
+  .top-header { padding: 12px 16px; }
+  .school-info h1 { max-width: 45vw; font-size: 15px; }
+  .backup-chip-text { display: none; }
+  .backup-chip { padding: 5px; }
+  .user-info-text { display: none; }
+  .user-profile-badge { padding-left: 10px; }
+
+  .content-area { margin: 12px; padding: 18px; border-radius: 14px; }
+  .section-title { flex-direction: column; align-items: flex-start; }
+  .header-action-btns { width: 100%; justify-content: flex-start; }
+  .header-action-btns input { flex: 1; min-width: 160px; }
+}
+
+@media (max-width: 700px) {
+  .dashboard-metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .metric-card { padding: 14px; gap: 10px; }
+  .metric-icon { width: 38px; height: 38px; }
+  .metric-number { font-size: 20px; }
+  .metric-sub { display: none; }
+
+  .content-area > div[style*='grid-template-columns: 2fr 1fr'] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .student-id-cards-grid { grid-template-columns: 1fr; }
+  .student-id-card { width: 100%; }
+  .modal-card { padding: 18px; }
+  .history-row { flex-wrap: wrap; }
+  .history-actions { width: 100%; justify-content: flex-end; }
+  .app-footer { padding: 10px 14px; }
+}

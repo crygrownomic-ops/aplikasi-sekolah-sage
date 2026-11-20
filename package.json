@@ -1,6 +1,7 @@
 {
-  "name": "siakad-sekolah",
-  "version": "1.0.0",
+  "name": "siakad-sage",
+  "version": "2.0.0",
+  "description": "Sistem Informasi Akademik Sekolah dengan penyimpanan lokal dan backup JSON otomatis",
   "type": "module",
   "scripts": {
     "dev": "vite --open",

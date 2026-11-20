@@ -1,8 +1,13 @@
 // SISTEM AUTHENTICATION & SMART LOADER CADANGAN LENGKAP (ANTI FAIL & AUTO CHECK)
 
-function checkAuthStatus() {
+async function checkAuthStatus() {
   const isLoggedIn = sessionStorage.getItem('siakad_auth');
   const loginOverlay = document.getElementById('loginOverlay');
+
+  // Tunggu proses auto-restore dari folder lokal selesai sebelum halaman dirender.
+  if (window.StorageManager && window.StorageManager.ready) {
+    try { await window.StorageManager.ready; } catch (e) { console.warn(e); }
+  }
 
   if (isLoggedIn === 'true') {
     if (loginOverlay) loginOverlay.classList.add('hidden');
@@ -155,13 +160,14 @@ const builtInTemplates = {
           </div>
         </div>
 
-        <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px;">
-          <h4 style="font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">🔒 Proteksi Data Harddisk</h4>
-          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px;">
-            Penyimpanan terhubung secara lokal. Data tersimpan otomatis dan kebal terhadap pembersihan cache browser.
-          </p>
+        <div class="storage-status-card">
+          <div class="storage-status-head">
+            <span class="storage-status-icon">🔒</span>
+            <h4>Proteksi Data Lokal</h4>
+          </div>
+          <p id="dashBackupStatus" class="storage-status-text">Memeriksa status penyimpanan...</p>
           <button type="button" class="btn btn-secondary" onclick="loadPage('pengaturan')" style="width: 100%; font-size: 12px;">
-            Pengaturan Backup & Sinkronisasi
+            Pengaturan Backup &amp; Sinkronisasi
           </button>
         </div>
       </div>
@@ -987,7 +993,9 @@ async function loadPage(pageName) {
   try {
     const response = await fetch(`pages/${pageName}.html`);
     if (!response.ok) throw new Error(`File pages/${pageName}.html tidak ditemukan.`);
-    const htmlContent = await response.text();
+    // Saat development, Vite menyisipkan client HMR ke setiap respons .html.
+    // Buang tag tersebut agar tidak ikut terpasang di dalam konten dinamis.
+    const htmlContent = (await response.text()).replace(/<script[^>]*src="\/@vite\/client"[^>]*>\s*<\/script>/gi, '');
 
     // VERIFIKASI KEUTUHAN ISI FILE
     if (!htmlContent.trim()) throw new Error("File HTML kosong.");
@@ -1007,6 +1015,12 @@ async function loadPage(pageName) {
     } else {
       container.innerHTML = `<p style="padding: 20px; color: var(--text-muted);">Halaman tidak ditemukan.</p>`;
     }
+  }
+
+  // SINKRONKAN KONDISI UI SETELAH HALAMAN DIMUAT
+  if (window.Shell) {
+    Shell.applyTheme(localStorage.getItem('app_theme') || 'sage');
+    if (window.StorageManager) Shell.renderStorageSettings(StorageManager.getStatus());
   }
 
   // JALANKAN FUNGSI RE-RENDER ELEMEN SECARA PRESISI

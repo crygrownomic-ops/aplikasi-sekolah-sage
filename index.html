@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Informasi Administrasi Sekolah</title>
+  <meta name="description" content="SIAKAD SAGE — Sistem Informasi Akademik Sekolah, lokal, modern, dan siap backup otomatis.">
+  <meta name="theme-color" content="#2E4F4F">
+  <title>SIAKAD SAGE — Sistem Informasi Akademik Sekolah</title>
   
   <!-- CSS Modular -->
   <link rel="stylesheet" href="css/themes.css">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/modern.css">
 </head>
 <body>
 
@@ -207,12 +210,15 @@
 
   </div>
 
-  <!-- SDK SUPABASE CLIENT & SHEETJS EXCEL -->
+  <!-- PUSTAKA EKSTERNAL (opsional; aplikasi tetap berjalan offline) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- JavaScript Modular -->
-  <script src="js/settings.js"></script>
-  <script src="js/app.js"></script>
+  <!-- JavaScript Modular
+       Urutan penting: storage -> data -> UI shell -> router/auth -->
+  <script src="js/core/storage-manager.js"></script>
+  <script src="js/core/data-manager.js"></script>
+  <script src="js/ui/shell.js"></script>
+  <script src="js/core/app.js"></script>
 </body>
 </html>

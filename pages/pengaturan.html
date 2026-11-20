@@ -1,13 +1,15 @@
 <div class="section-title">
   <div class="section-title-left">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    Pengaturan Sistem & Keamanan Database
+    Pengaturan Sistem &amp; Keamanan Database
   </div>
+  <span class="status-badge">Pengaturan tersimpan lokal</span>
 </div>
 
 <!-- 1. IDENTITAS SEKOLAH -->
-<form onsubmit="saveSchoolProfile(event)" style="margin-bottom: 28px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">Identitas Utama Sekolah</h3>
+<form class="settings-panel" onsubmit="saveSchoolProfile(event)">
+  <h3>Identitas Utama Sekolah</h3>
+  <p>Data ini tampil di header aplikasi, kartu siswa, dan berkas ekspor.</p>
   <div class="form-grid">
     <div class="form-group full-width">
       <label>Nama Resmi Sekolah</label>
@@ -22,7 +24,7 @@
       <input type="text" id="inputTelpSekolah" placeholder="(021) 555-0192" required>
     </div>
     <div class="form-group full-width">
-      <label>Upload Logo Sekolah</label>
+      <label>Logo Sekolah</label>
       <input type="file" accept="image/*" onchange="handleLogoUpload(event)">
     </div>
   </div>
@@ -31,16 +33,13 @@
   </div>
 </form>
 
-<!-- 2. PERIODE AKADEMIK & TAHUN AJARAN (UPDATED MANDIRI) -->
-<form onsubmit="saveAcademicPeriod(event)" style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Periode Akademik & Tahun Ajaran Aktif</h3>
-  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-    Atur dan perbarui Tahun Ajaran serta Semester aktif secara mandiri agar penggunaan aplikasi dapat berjalan jangka panjang.
-  </p>
-
+<!-- 2. PERIODE AKADEMIK -->
+<form class="settings-panel" onsubmit="saveAcademicPeriod(event)">
+  <h3>Periode Akademik &amp; Tahun Ajaran Aktif</h3>
+  <p>Atur tahun ajaran dan semester aktif secara mandiri agar aplikasi dapat digunakan jangka panjang.</p>
   <div class="form-grid">
     <div class="form-group">
-      <label>Tahun Ajaran (Contoh: 2026/2027)</label>
+      <label>Tahun Ajaran (contoh: 2026/2027)</label>
       <input type="text" id="inputTahunAjaran" placeholder="2026/2027" required>
     </div>
     <div class="form-group">
@@ -56,72 +55,111 @@
   </div>
 </form>
 
-<!-- 3. PILIH FOLDER KOMPUTER & KEAMANAN LOKAL (FITUR BARU ANTI HAPUS) -->
-<div style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Penyimpanan Harddisk Lokal & Proteksi Anti-Hapus</h3>
-  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-    Hubungkan folder komputer agar backup terisi otomatis dan kunci browser agar data kebal dari pembersihan cache.
+<!-- 3. PENYIMPANAN LOKAL & AUTO BACKUP -->
+<div class="settings-panel">
+  <h3>Penyimpanan Komputer Lokal &amp; Backup Otomatis</h3>
+  <p>
+    Pilih folder di komputer Anda (misalnya <code>D:/Data Sekolah</code>). Setiap perubahan data akan
+    tersimpan di browser <strong>dan</strong> otomatis dibuatkan file JSON di folder tersebut. Saat aplikasi
+    dibuka kembali, data terbaru dari folder dipulihkan otomatis.
   </p>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
-    <!-- KARTU SAMBUNG FOLDER LOKAL -->
-    <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px;">
-      <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">📁 Folder Penyimpanan Komputer</h4>
-      <p id="folderStatusText" style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Belum ada folder yang terhubung.</p>
-      <button type="button" class="btn btn-secondary" onclick="selectLocalDirectory()">
-        Pilih Folder di Laptop (D:/ atau C:/)
+  <div class="storage-grid">
+    <div class="setting-card" id="folderCard">
+      <h4>📁 Folder Penyimpanan</h4>
+      <p id="folderStatusText">Belum ada folder yang terhubung.</p>
+      <button type="button" class="btn btn-primary" id="connectFolderBtn" onclick="Shell.selectFolder()">
+        Pilih Folder di Komputer
+      </button>
+      <button type="button" class="btn btn-secondary" id="requestAccessBtn" style="display: none;" onclick="StorageManager.requestAccess()">
+        Pulihkan Izin Folder
+      </button>
+      <button type="button" class="btn btn-ghost" id="disconnectFolderBtn" style="display: none;" onclick="StorageManager.disconnectFolder()">
+        Putuskan Folder
       </button>
     </div>
 
-    <!-- KARTU PROTEKSI BROWSER -->
-    <div style="background: var(--input-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px;">
-      <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 6px;">🛡️ Proteksi Memori Browser</h4>
-      <p id="persistenceStatus" style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px;">
-        Mengecek status kuncian memori...
-      </p>
-      <button type="button" class="btn btn-secondary" onclick="enablePersistentStorage()">
+    <div class="setting-card">
+      <h4>⚙️ Pengaturan Backup</h4>
+      <dl class="info-list">
+        <dt>Mesin penyimpanan</dt><dd id="storageEngine">-</dd>
+        <dt>Folder terhubung</dt><dd id="storageFolderName">-</dd>
+        <dt>Izin akses</dt><dd id="storagePermission">-</dd>
+        <dt>Backup terakhir</dt><dd id="storageLastBackup">-</dd>
+        <dt>Perubahan terakhir</dt><dd id="storageLastChange">-</dd>
+      </dl>
+      <div class="switch-line">
+        <span>Auto backup setiap perubahan data</span>
+        <label class="switch"><input type="checkbox" id="autoBackupToggle" checked></label>
+      </div>
+      <div class="switch-line">
+        <span>Simpan riwayat backup terakhir</span>
+        <select id="keepHistorySelect" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main);">
+          <option value="3">3 file</option>
+          <option value="5">5 file</option>
+          <option value="10">10 file</option>
+          <option value="20">20 file</option>
+        </select>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="Shell.quickBackup()">💾 Backup Sekarang</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="Shell.restoreLatest()">↺ Pulihkan Data Terbaru</button>
+      </div>
+    </div>
+
+    <div class="setting-card">
+      <h4>🛡️ Proteksi Memori Browser</h4>
+      <p id="persistenceStatus" style="font-weight: 600;">Mengecek status kuncian memori...</p>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="enablePersistentStorage()">
         Kunci Data agar Kebal Clear Cache
       </button>
     </div>
   </div>
 
-  <!-- PANEL BACKUP & RESTORE MANUAL -->
-  <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 18px;">
-    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">Cadangan Manual (JSON File)</h4>
-    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
-      Unduh atau muat ulang file cadangan database SIAKAD kapan saja.
-    </p>
-
-    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
-      <button type="button" class="btn btn-primary" onclick="exportDatabaseJSON()">
-        📥 Download Backup Database (.json)
-      </button>
-
-      <label class="btn btn-secondary" style="cursor: pointer;">
-        📤 Import / Restore Database
-        <input type="file" accept=".json" onchange="importDatabaseJSON(event)" style="display: none;">
-      </label>
-
-      <button type="button" class="btn btn-secondary" onclick="resetDatabaseToDefault()" style="color: #EF4444; border-color: #FCA5A5; margin-left: auto;">
-        ⚠️ Reset Database (Pabrik)
-      </button>
+  <div class="setting-card">
+    <h4>🕘 Riwayat Backup di Folder</h4>
+    <p>File bakunya adalah <code>DATABASE_SIAKAD_AUTOSAVE.json</code>. Riwayat disimpan di folder <code>RIWAYAT_BACKUP</code>.</p>
+    <div id="backupHistoryList">
+      <div class="empty-state">Memeriksa riwayat backup...</div>
     </div>
   </div>
 </div>
 
-<!-- 4. MODE SUPABASE CLOUD OPTIONAL -->
-<div style="border-top: 1px solid var(--border-color); margin-bottom: 28px; padding-top: 20px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Database Cloud Online (Supabase Optional)</h3>
-  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
-    Aktifkan jika ingin menyinkronkan data ke server cloud online.
-  </p>
+<!-- 4. EXPORT / IMPORT JSON MANUAL -->
+<div class="settings-panel">
+  <h3>Export &amp; Import Database (JSON)</h3>
+  <p>Gunakan untuk pindah komputer, pergantian unit, atau berbagi data antar pengguna.</p>
+  <div class="form-grid" style="margin-bottom: 14px;">
+    <div class="form-group">
+      <label>Mode Import</label>
+      <select id="selectImportMode">
+        <option value="replace">Timpa seluruh data (pindah unit)</option>
+        <option value="merge">Gabungkan dengan data saat ini</option>
+      </select>
+    </div>
+  </div>
+  <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+    <button type="button" class="btn btn-primary" onclick="exportDatabaseJSON()">📥 Download Backup (.json)</button>
+    <label class="btn btn-secondary" style="cursor: pointer;">
+      📤 Import File JSON
+      <input type="file" accept=".json,application/json" onchange="importDatabaseJSON(event)" style="display: none;">
+    </label>
+    <button type="button" class="btn btn-ghost" onclick="resetDatabaseToDefault()" style="color: var(--danger); margin-left: auto;">
+      ⚠️ Reset Database
+    </button>
+  </div>
+</div>
 
+<!-- 5. MODE CLOUD OPTIONAL -->
+<div class="settings-panel">
+  <h3>Database Cloud Online (Supabase — Opsional)</h3>
+  <p>Nyalikan hanya jika ingin sinkronisasi ke server. Mode lokal tetap menjadi penyimpanan utama.</p>
   <div class="form-grid" style="margin-bottom: 16px;">
-    <div class="form-group full-width">
-      <label>Mode Penyimpanan Utama</label>
+    <div class="form-group">
+      <label>Mode Penyimpanan</label>
       <select id="selectStorageMode" onchange="toggleStorageModeUI()">
-        <option value="local">Mode Offline (Penyimpanan Komputer Lokal)</option>
-        <option value="supabase">Mode Online (Supabase Cloud Database)</option>
+        <option value="local">Offline — Komputer Lokal</option>
+        <option value="supabase">Online — Supabase Cloud</option>
       </select>
     </div>
   </div>
@@ -137,39 +175,23 @@
         <input type="password" id="inputSupabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
       </div>
     </div>
-    <div style="display: flex; gap: 10px; margin-top: 12px;">
-      <button type="button" class="btn btn-secondary" onclick="DB.migrateLocalToSupabase()">
-        ☁️ Sync / Upload Data Lokal ke Supabase
-      </button>
-      <button type="button" class="btn btn-primary" onclick="saveSupabaseConfig()">
-        Simpan Kredensial Supabase
-      </button>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;">
+      <button type="button" class="btn btn-secondary" onclick="DB.migrateLocalToSupabase()">☁️ Upload Data ke Supabase</button>
+      <button type="button" class="btn btn-primary" onclick="saveSupabaseConfig()">Simpan Kredensial</button>
     </div>
   </div>
 </div>
 
-<!-- 5. PILIHAN TEMA WARNA APLIKASI (INTERAKTIF LANGSUNG BERUBAH) -->
-<div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
-  <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Pilihan Tema Warna Tampilan</h3>
-  <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
-    Klik pada salah satu kartu warna di bawah. Tampilan warna aplikasi akan langsung berganti seketika!
-  </p>
-
+<!-- 6. TAMPILAN -->
+<div class="settings-panel">
+  <h3>Tema Warna Tampilan</h3>
+  <p>Klik kartu warna untuk mengganti tampilan secara langsung. Pilihan tersimpan otomatis.</p>
   <div class="theme-selector-grid">
-    <div class="theme-card" data-theme-name="sage" onclick="setTheme('sage')">
-      <div class="theme-color-preview" style="background: #2E4F4F;"></div>Sage Green
-    </div>
-    <div class="theme-card" data-theme-name="navy" onclick="setTheme('navy')">
-      <div class="theme-color-preview" style="background: #1E293B;"></div>Classic Navy
-    </div>
-    <div class="theme-card" data-theme-name="emerald" onclick="setTheme('emerald')">
-      <div class="theme-color-preview" style="background: #065F46;"></div>Emerald Green
-    </div>
-    <div class="theme-card" data-theme-name="monochrome" onclick="setTheme('monochrome')">
-      <div class="theme-color-preview" style="background: #18181B;"></div>Monochrome
-    </div>
-    <div class="theme-card" data-theme-name="amber" onclick="setTheme('amber')">
-      <div class="theme-color-preview" style="background: #78350F;"></div>Warm Amber
-    </div>
+    <div class="theme-card" data-theme-name="sage" onclick="setTheme('sage')"><div class="theme-color-preview" style="background: #2E4F4F;"></div>Sage Green</div>
+    <div class="theme-card" data-theme-name="navy" onclick="setTheme('navy')"><div class="theme-color-preview" style="background: #1E293B;"></div>Classic Navy</div>
+    <div class="theme-card" data-theme-name="emerald" onclick="setTheme('emerald')"><div class="theme-color-preview" style="background: #065F46;"></div>Emerald Green</div>
+    <div class="theme-card" data-theme-name="monochrome" onclick="setTheme('monochrome')"><div class="theme-color-preview" style="background: #18181B;"></div>Monochrome</div>
+    <div class="theme-card" data-theme-name="amber" onclick="setTheme('amber')"><div class="theme-color-preview" style="background: #92400E;"></div>Warm Amber</div>
+    <div class="theme-card" data-theme-name="dark" onclick="setTheme('dark')"><div class="theme-color-preview" style="background: #0F172A;"></div>Dark Slate</div>
   </div>
 </div>
